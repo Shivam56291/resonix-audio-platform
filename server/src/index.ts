@@ -2,6 +2,7 @@ import express from "express";
 import "dotenv/config";
 
 import "./db";
+import { PORT } from "@/utils/variables";
 import authRouter from '@/routers/auth'
 
 const app = express();
@@ -11,8 +12,6 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.static("public"));
 
 app.use("/auth", authRouter);
-
-const PORT = process.env.PORT || 8989;
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
