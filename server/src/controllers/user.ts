@@ -4,7 +4,11 @@ import crypto from "crypto";
 
 import { CreateUser } from "@/@types/user";
 import User from "@/models/user";
-import { sendVerificationMail, sendForgetPasswordLink } from "@/utils/mail";
+import {
+  sendVerificationMail,
+  sendForgetPasswordLink,
+  sendPassResetSuccessEmail,
+} from "@/utils/mail";
 import { generateToken } from "@/utils/helper";
 import EmailVerificationToken from "@/models/emailVerficationToken";
 import { VerifyEmailRequest } from "@/@types/user";
@@ -121,4 +125,33 @@ export const generateForgetPasswordLink: RequestHandler = async (req, res) => {
   sendForgetPasswordLink({ email, link: resetLink });
 
   res.status(201).json({ message: "Reset password link sent successfully" });
+};
+
+export const grantValid: RequestHandler = (req, res) => {
+  res.status(200).json({ valid: true });
+};
+
+export const updatePassword: RequestHandler = async (req, res) => {
+  const { userId, password } = req.body;
+
+  const user = await User.findById(userId);
+  if (!user) {
+    return res.status(403).json({ message: "Unauthorized Access" });
+  }
+
+  const matched = await user.comparePassword(password);
+  if (matched) {
+    return res.status(422).json({
+      message: "New password must be different from the old password",
+    });
+  }
+
+  user.password = password;
+  await user.save();
+
+  await PasswordResetToken.findOneAndDelete({ owner: user._id });
+
+  sendPassResetSuccessEmail(user.name, user.email);
+
+  res.status(200).json({ message: "Password updated successfully" });
 };

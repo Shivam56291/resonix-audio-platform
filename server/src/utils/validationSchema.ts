@@ -25,7 +25,7 @@ export const CreateUserSchema = yup.object().shape({
     ),
 });
 
-export const EmailVerificationBody = yup.object().shape({
+export const TokenAndIDValidation = yup.object().shape({
   token: yup.string().trim().required("Token is missing!"),
   userId: yup
     .string()
@@ -36,4 +36,24 @@ export const EmailVerificationBody = yup.object().shape({
       return "";
     })
     .required("Invalid user ID"),
+});
+
+export const updatePasswordSchema = yup.object().shape({
+  userId: yup
+    .string()
+    .transform(function (value) {
+      if (this.isType(value) && isValidObjectId(value)) {
+        return value;
+      }
+      return "";
+    })
+    .required("Invalid user ID"),
+  password: yup
+    .string()
+    .required("Password is missing!")
+    .min(8, "Password must be at least 8 characters long")
+    .matches(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+      "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
+    ),
 });
