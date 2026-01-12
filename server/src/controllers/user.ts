@@ -1,57 +1,124 @@
 import { RequestHandler } from "express";
-import nodemailer from "nodemailer";
-import path from "path";
+import { isValidObjectId } from "mongoose";
+import crypto from "crypto";
 
 import { CreateUser } from "@/@types/user";
 import User from "@/models/user";
-import { MAILTRAP_USER, MAILTRAP_PASS } from "@/utils/variables";
+import { sendVerificationMail, sendForgetPasswordLink } from "@/utils/mail";
 import { generateToken } from "@/utils/helper";
 import EmailVerificationToken from "@/models/emailVerficationToken";
-import { generateTemplate } from "@/mail/template";
+import { VerifyEmailRequest } from "@/@types/user";
+import PasswordResetToken from "@/models/passwordResetToken";
+import { PASSWORD_RESET_LINK } from "@/utils/variables";
 
 export const create: RequestHandler = async (req: CreateUser, res) => {
   const { email, password, name } = req.body;
   const newUser = await User.create({ email, password, name });
 
-  // send email
-  var transport = nodemailer.createTransport({
-    host: "sandbox.smtp.mailtrap.io",
-    port: 2525,
-    auth: {
-      user: MAILTRAP_USER,
-      pass: MAILTRAP_PASS,
-    },
-  });
-
   const token = generateToken(6);
+
   await EmailVerificationToken.create({ owner: newUser._id, token });
 
-  const welcomeMessage = `Hello ${name}, welcome to Resonix! There are so much thing that we do for verified users. Use the given OTP to verify your email address.`;
-
-  transport.sendMail({
-    from: "Resonix Audio Platform <no-reply@resonixaudio.com>",
-    to: email,
-    html: generateTemplate({
-      title: "Welcome to Resonix Audio Platform",
-      message: welcomeMessage,
-      link: `#`,
-      logo: "cid:logo",
-      banner: "cid:welcome",
-      btnTitle: token,
-    }),
-    attachments: [
-      {
-        filename: "logo.png",
-        path: path.join(__dirname, "../public/logo.png"),
-        cid: "logo",
-      },
-      {
-        filename: "welcome.png",
-        path: path.join(__dirname, "../public/welcome.png"),
-        cid: "welcome",
-      },
-    ],
+  sendVerificationMail(token, {
+    name,
+    email,
+    userId: newUser._id.toString(),
   });
 
-  res.status(201).json({ newUser });
+  res.status(201).json({ user: newUser._id, name, email });
+};
+
+export const verifyEmail: RequestHandler = async (
+  req: VerifyEmailRequest,
+  res
+) => {
+  const { token, userId } = req.body;
+
+  // 1. Check user first
+  const user = await User.findById(userId);
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  // 2. If already verified → better UX
+  if (user.verified) {
+    return res
+      .status(200)
+      .json({ message: "Your email is already verified. You can log in." });
+  }
+
+  // 3. Find verification token
+  const verificationToken = await EmailVerificationToken.findOne({
+    owner: userId,
+  });
+  if (!verificationToken) {
+    return res.status(403).json({ message: "Verification token not found" });
+  }
+
+  // 4. Compare token
+  const matched = await verificationToken.compareToken(token);
+  if (!matched) {
+    return res.status(403).json({ message: "Invalid verification token" });
+  }
+
+  // 5. Verify user
+  user.verified = true;
+  await user.save();
+
+  // 6. Delete token
+  await EmailVerificationToken.findByIdAndDelete(verificationToken._id);
+
+  return res.status(200).json({ message: "Email verified successfully" });
+};
+
+export const sendReVerificationToken: RequestHandler = async (req, res) => {
+  const { userId } = req.body;
+
+  if (!isValidObjectId(userId)) {
+    return res.status(403).json({ message: "Invalid Request" });
+  }
+
+  const user = await User.findById(userId);
+  if (!user) {
+    return res.status(403).json({ message: "Invalid Request" });
+  }
+
+  if (user.verified) {
+    return res
+      .status(200)
+      .json({ message: "Your email is already verified. You can log in." });
+  }
+
+  await EmailVerificationToken.findOneAndDelete({ owner: userId });
+
+  const token = generateToken(6);
+  await EmailVerificationToken.create({ owner: userId, token });
+
+  sendVerificationMail(token, {
+    name: user.name,
+    email: user.email,
+    userId: user._id.toString(),
+  });
+
+  res.status(201).json({ message: "Verification token sent successfully" });
+};
+
+export const generateForgetPasswordLink: RequestHandler = async (req, res) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(404).json({ message: "Account not found" });
+  }
+
+  await PasswordResetToken.findOneAndDelete({ owner: user._id });
+
+  const token = crypto.randomBytes(36).toString("hex");
+  await PasswordResetToken.create({ owner: user._id, token });
+
+  const resetLink = `${PASSWORD_RESET_LINK}?token=${token}&userId=${user._id}`;
+
+  sendForgetPasswordLink({ email, link: resetLink });
+
+  res.status(201).json({ message: "Reset password link sent successfully" });
 };

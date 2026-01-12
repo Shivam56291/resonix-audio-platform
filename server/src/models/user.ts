@@ -1,15 +1,17 @@
-import { ObjectId, Schema, model } from "mongoose";
+import { ObjectId, Schema, model, Document, Types } from "mongoose";
+import { hash, compare } from "bcrypt";
 
-interface UserDocument {
+interface UserDocument extends Document {
   name: string;
   email: string;
   password: string;
   verified: boolean;
   avatar?: { url: string; publicId: string };
   tokens: string[];
-  favorites: ObjectId[];
-  followers: ObjectId[];
-  followings: ObjectId[];
+  favorites: Types.ObjectId[];
+  followers: Types.ObjectId[];
+  followings: Types.ObjectId[];
+  comparePassword(password: string): Promise<boolean>;
 }
 
 const userSchema = new Schema<UserDocument>(
@@ -31,6 +33,7 @@ const userSchema = new Schema<UserDocument>(
       required: true,
       trim: true,
       minlength: 6,
+      select: false,
     },
     verified: {
       type: Boolean,
@@ -38,8 +41,8 @@ const userSchema = new Schema<UserDocument>(
     },
     avatar: {
       type: Object,
-      url: String,
-      publicId: String,
+      url: { type: String },
+      publicId: { type: String },
     },
     tokens: [String],
     favorites: [
@@ -63,5 +66,19 @@ const userSchema = new Schema<UserDocument>(
   },
   { timestamps: true }
 );
+
+
+userSchema.pre("save", async function () {
+  if (this.isModified("password")) {
+    this.password = await hash(this.password, 10);
+  }
+});
+
+userSchema.methods.comparePassword = async function (
+  password: string
+) {
+  return await compare(password, this.password);
+};
+
 
 export default model<UserDocument>("User", userSchema);

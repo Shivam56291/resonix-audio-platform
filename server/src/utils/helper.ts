@@ -1,6 +1,5 @@
 export const generateToken = (length: number) => {
-  const characters =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const characters = "0123456789";
   let token = "";
   for (let i = 0; i < length; i++) {
     token += characters.charAt(Math.floor(Math.random() * characters.length));
