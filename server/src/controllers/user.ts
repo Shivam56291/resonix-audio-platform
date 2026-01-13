@@ -1,6 +1,7 @@
 import { RequestHandler } from "express";
 import { isValidObjectId } from "mongoose";
 import crypto from "crypto";
+import Jwt from "jsonwebtoken";
 
 import { CreateUser } from "@/@types/user";
 import User from "@/models/user";
@@ -13,7 +14,7 @@ import { generateToken } from "@/utils/helper";
 import EmailVerificationToken from "@/models/emailVerficationToken";
 import { VerifyEmailRequest } from "@/@types/user";
 import PasswordResetToken from "@/models/passwordResetToken";
-import { PASSWORD_RESET_LINK } from "@/utils/variables";
+import { JWT_SECRET, PASSWORD_RESET_LINK } from "@/utils/variables";
 
 export const create: RequestHandler = async (req: CreateUser, res) => {
   const { email, password, name } = req.body;
@@ -154,4 +155,36 @@ export const updatePassword: RequestHandler = async (req, res) => {
   sendPassResetSuccessEmail(user.name, user.email);
 
   res.status(200).json({ message: "Password updated successfully" });
+};
+
+export const singIn: RequestHandler = async (req, res) => {
+  const { email, password } = req.body;
+
+  const user = await User.findOne({ email }).select("+password");
+  if (!user) {
+    return res.status(403).json({ message: "Invalid credentials" });
+  }
+
+  const matched = await user.comparePassword(password);
+  if (!matched) {
+    return res.status(403).json({ message: "Invalid credentials" });
+  }
+
+  const token = Jwt.sign({ userId: user._id }, JWT_SECRET);
+  user.tokens.push(token);
+
+  await user.save();
+
+  res.json({
+    profile: {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      verified: user.verified,
+      avatar: user.avatar?.url,
+      followers: user.followers.length,
+      followings: user.followings.length,
+    },
+    token,
+  });
 };
