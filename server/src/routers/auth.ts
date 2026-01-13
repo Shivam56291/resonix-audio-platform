@@ -14,10 +14,13 @@ import {
   grantValid,
   updatePassword,
   singIn,
-} from "@/controllers/user";
+  updateProfile,
+  sendProfile,
+  logOut,
+} from "@/controllers/auth";
 import { TokenAndIDValidation } from "@/utils/validationSchema";
 import { isValidPassResetToken, mustAuth } from "@/middleware/auth";
-import user from "@/models/user";
+import fileParser, { RequestWithFiles } from "@/middleware/fileParser";
 
 const router = Router();
 
@@ -45,22 +48,10 @@ router.post(
 
 router.post("/sign-in", validate(SignInValidationSchema), singIn);
 
-router.get("/is-auth", mustAuth, (req, res) => {
-  res.json({
-    profile: req.user,
-  });
-});
+router.get("/is-auth", mustAuth, sendProfile);
 
-router.get("/public", (req, res) => {
-  res.json({
-    message: "You are in public route."
-  });
-});
+router.post("/update-profile", mustAuth, fileParser, updateProfile);
 
-router.get("/private", mustAuth, (req, res) => {
-  res.json({
-    message: "You are in private route.",
-  });
-});
+router.post("/log-out", mustAuth, logOut);
 
 export default router;

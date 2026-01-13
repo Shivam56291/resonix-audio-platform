@@ -10,11 +10,14 @@ import {
   sendForgetPasswordLink,
   sendPassResetSuccessEmail,
 } from "@/utils/mail";
-import { generateToken } from "@/utils/helper";
+import { formatProfile, generateToken } from "@/utils/helper";
 import EmailVerificationToken from "@/models/emailVerficationToken";
 import { VerifyEmailRequest } from "@/@types/user";
 import PasswordResetToken from "@/models/passwordResetToken";
 import { JWT_SECRET, PASSWORD_RESET_LINK } from "@/utils/variables";
+import { RequestWithFiles } from "@/middleware/fileParser";
+import formidable from "formidable";
+import cloudinary from "@/cloud/index";
 
 export const create: RequestHandler = async (req: CreateUser, res) => {
   const { email, password, name } = req.body;
@@ -186,5 +189,84 @@ export const singIn: RequestHandler = async (req, res) => {
       followings: user.followings.length,
     },
     token,
+  });
+};
+
+export const updateProfile: RequestHandler = async (
+  req: RequestWithFiles,
+  res
+) => {
+  const { name } = req.body;
+  const avatar = req.files?.avatar as formidable.File;
+
+  const user = await User.findById(req.user.id);
+  if (!user) {
+    return res
+      .status(403)
+      .json({ message: "Something went wrong, user not found!" });
+  }
+
+  if (typeof name !== "string") {
+    return res.status(422).json({ message: "Invalid name" });
+  }
+  if (name.trim().length < 3) {
+    return res
+      .status(422)
+      .json({ message: "Name must be at least 3 characters long" });
+  }
+  user.name = name;
+
+  if (avatar) {
+    if (user.avatar?.publicId) {
+      await cloudinary.uploader.destroy(user.avatar.publicId);
+    }
+
+    const { secure_url, public_id } = await cloudinary.uploader.upload(
+      avatar.filepath,
+      {
+        width: 300,
+        height: 300,
+        crop: "thumb",
+        gravity: "face",
+      }
+    );
+
+    user.avatar = { url: secure_url, publicId: public_id };
+  }
+
+  await user.save();
+
+  res.json({
+    profile: formatProfile(user),
+  });
+};
+
+export const sendProfile: RequestHandler = (req, res) => {
+  res.json({
+    profile: req.user,
+  });
+};
+
+export const logOut: RequestHandler = async (req, res) => {
+  const { fromAll } = req.query;
+
+  const token = req.token;
+  const user = await User.findById(req.user.id);
+  if (!user) {
+    return res
+      .status(403)
+      .json({ message: "Something went wrong, user not found!" });
+  }
+
+  if (fromAll === "yes") {
+    user.tokens = [];
+  } else {
+    user.tokens = user.tokens.filter((tkn) => tkn !== token);
+  }
+
+  await user.save();
+
+  res.json({
+    success: true,
   });
 };

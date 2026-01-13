@@ -1,7 +1,7 @@
 import { ObjectId, Schema, model, Document, Types } from "mongoose";
 import { hash, compare } from "bcrypt";
 
-interface UserDocument extends Document {
+export interface UserDocument extends Document {
   name: string;
   email: string;
   password: string;
