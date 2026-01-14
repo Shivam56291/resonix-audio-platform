@@ -1,5 +1,6 @@
 import * as yup from "yup";
 import { isValidObjectId } from "mongoose";
+import { categories } from "./audio_category";
 
 export const CreateUserSchema = yup.object().shape({
   name: yup
@@ -64,4 +65,10 @@ export const SignInValidationSchema = yup.object().shape({
     .string()
     .required("Password is missing!")
     .min(8, "Password must be at least 8 characters long")
+});
+
+export const AudioValidationSchema = yup.object().shape({
+  title: yup.string().required("Title is missing!"),
+  about: yup.string().required("About is missing!"),
+  category: yup.string().oneOf(categories).required("Category is missing!"),
 });
