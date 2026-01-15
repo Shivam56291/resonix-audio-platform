@@ -27,13 +27,11 @@ export const isValidPassResetToken: RequestHandler = async (req, res, next) => {
 };
 
 export const mustAuth: RequestHandler = async (req, res, next) => {
-  const { authorization } = req.headers;
-  const token = authorization?.split("Bearer ")[1];
-  if (!token) {
-    return res.status(403).json({
-      message: "Unauthorized Request",
-    });
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(403).json({ message: "Unauthorized Request" });
   }
+  const token = authHeader.split(" ")[1];
 
   const payload = Jwt.verify(token, JWT_SECRET) as JwtPayload;
   const id = payload.userId;
