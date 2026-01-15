@@ -64,11 +64,50 @@ export const SignInValidationSchema = yup.object().shape({
   password: yup
     .string()
     .required("Password is missing!")
-    .min(8, "Password must be at least 8 characters long")
+    .min(8, "Password must be at least 8 characters long"),
 });
 
 export const AudioValidationSchema = yup.object().shape({
   title: yup.string().required("Title is missing!"),
   about: yup.string().required("About is missing!"),
   category: yup.string().oneOf(categories).required("Category is missing!"),
+});
+
+export const NewPlaylistValidationSchema = yup.object().shape({
+  title: yup.string().required("Title is missing!"),
+  resId: yup
+  .string()
+  .transform(function (value) {
+    if (this.isType(value) && isValidObjectId(value)) {
+      return value;
+    }
+    return "";
+  }),
+  visibility: yup
+    .string()
+    .oneOf(["public", "private"], "Visibility is must be public or private!")
+    .required("Visibility is missing!"),
+});
+
+export const OldPlaylistValidationSchema = yup.object().shape({
+  title: yup.string().required("Title is missing!"),
+  item: yup
+  .string()
+  .transform(function (value) {
+    if (this.isType(value) && isValidObjectId(value)) {
+      return value;
+    }
+    return "";
+  }),
+  id: yup
+  .string()
+  .transform(function (value) {
+    if (this.isType(value) && isValidObjectId(value)) {
+      return value;
+    }
+    return "";
+  }),
+  visibility: yup
+    .string()
+    .oneOf(["public", "private"], "Visibility is must be public or private!")
 });
