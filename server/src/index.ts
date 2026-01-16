@@ -3,11 +3,12 @@ import "dotenv/config";
 
 import "./db";
 import { PORT } from "@/utils/variables";
-import authRouter from '@/routers/auth'
-import audioRouter from '@/routers/audio'
-import favoriteRouter from '@/routers/favorite'
-import playlistRouter from '@/routers/playlist'
-import profileRouter from '@/routers/profile'
+import authRouter from "@/routers/auth";
+import audioRouter from "@/routers/audio";
+import favoriteRouter from "@/routers/favorite";
+import playlistRouter from "@/routers/playlist";
+import profileRouter from "@/routers/profile";
+import historyRouter from "@/routers/history";
 
 const app = express();
 
@@ -20,7 +21,8 @@ app.use("/audio", audioRouter);
 app.use("/favorite", favoriteRouter);
 app.use("/playlist", playlistRouter);
 app.use("/profile", profileRouter);
+app.use("/history", historyRouter);
 
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });
