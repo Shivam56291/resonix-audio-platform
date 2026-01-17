@@ -64,3 +64,36 @@ export const isVerified: RequestHandler = async (req, res, next) => {
   }
   next();
 };
+
+export const isAuth: RequestHandler = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(403).json({ message: "Unauthorized Request" });
+  }
+  const token = authHeader.split(" ")[1];
+
+  if (token) {
+    const payload = Jwt.verify(token, JWT_SECRET) as JwtPayload;
+    const id = payload.userId;
+
+    const user = await User.findOne({ _id: id, tokens: token });
+    if (!user) {
+      return res.status(403).json({
+        message: "Unauthorized Request",
+      });
+    }
+
+    req.user = {
+      id,
+      name: user.name,
+      email: user.email,
+      verified: user.verified,
+      avatar: user.avatar?.url,
+      followers: user.followers.length,
+      followings: user.followings.length,
+    };
+    req.token = token;
+  }
+
+  next();
+};

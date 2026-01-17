@@ -1,5 +1,10 @@
 <p align="center">
-  <img src="./server/src/public/logo.png" alt="Resonix Logo" width="160" />
+  <img
+    src="./server/src/public/logo.png"
+    alt="Resonix Logo"
+    width="160"
+    style="background-color: #ffffff; padding: 12px; border-radius: 14px;"
+  />
 </p>
 
 <h1 align="center">

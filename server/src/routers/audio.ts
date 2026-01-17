@@ -3,7 +3,7 @@ import fileParser from "@/middleware/fileParser";
 import { Router } from "express";
 import { AudioValidationSchema } from "@/utils/validationSchema";
 import { validate } from "@/middleware/validator";
-import { createAudio, updateAudio } from "@/controllers/audio";
+import { createAudio, updateAudio, getLatestUploads } from "@/controllers/audio";
 
 const router = Router();
 
@@ -23,6 +23,8 @@ router.patch(
   fileParser,
   validate(AudioValidationSchema),
   updateAudio
-);
+); 
+
+router.get("/latest", getLatestUploads)
 
 export default router;

@@ -1,6 +1,12 @@
 <p align="center">
-  <img src="./src/public/logo.png" alt="Resonix Server Logo" width="140" />
+  <img
+    src="./src/public/logo.png"
+    alt="Resonix Logo"
+    width="140"
+    style="background-color: #ffffff; padding: 12px; border-radius: 14px;"
+  />
 </p>
+
 
 <h1 align="center">
 ⚙️ Resonix Backend Server

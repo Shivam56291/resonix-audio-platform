@@ -68,12 +68,12 @@ const AudioSchema = new Schema<AudioDocument>(
           ref: "User",
         },
       ],
-      category: {
-        type: String,
-        enum: categories,
-        default: "Others",
-        required: true,
-      },
+    },
+    category: {
+      type: String,
+      enum: categories,
+      default: "Others",
+      required: true,
     },
   },
   {

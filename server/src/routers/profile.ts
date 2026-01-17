@@ -1,4 +1,4 @@
-import { mustAuth } from "@/middleware/auth";
+import { isAuth, mustAuth } from "@/middleware/auth";
 import express from "express";
 import {
   updateFollower,
@@ -6,6 +6,7 @@ import {
   getPublicUploads,
   getPublicProfile,
   getPublicPlaylist,
+  getRecommendByProfile,
 } from "@/controllers/profile";
 
 const router = express.Router();
@@ -19,5 +20,7 @@ router.get("/uploads/:profileId", getPublicUploads);
 router.get("/info/:profileId", getPublicProfile);
 
 router.get("/playlist/:profileId", getPublicPlaylist);
+
+router.get("/recommended", isAuth, getRecommendByProfile)
 
 export default router;
