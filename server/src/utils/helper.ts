@@ -2,12 +2,12 @@ import History from "@/models/history";
 import { UserDocument } from "@/models/user";
 import { Request } from "express";
 import moment from "moment";
+import crypto from "crypto";
 
-export const generateToken = (length: number) => {
-  const characters = "0123456789";
+export const generateToken = (length: number): string => {
   let token = "";
   for (let i = 0; i < length; i++) {
-    token += characters.charAt(Math.floor(Math.random() * characters.length));
+    token += crypto.randomInt(0, 10);
   }
   return token;
 };
@@ -24,7 +24,9 @@ export const formatProfile = (profile: UserDocument) => {
   };
 };
 
-export const getUsersPreviousHistory = async (req: Request): Promise<string[]> => {
+export const getUsersPreviousHistory = async (
+  req: Request
+): Promise<string[]> => {
   const [result] = await History.aggregate([
     { $match: { owner: req.user.id } },
     { $unwind: "$all" },
@@ -49,9 +51,9 @@ export const getUsersPreviousHistory = async (req: Request): Promise<string[]> =
     { $group: { _id: null, category: { $addToSet: "$audioData.category" } } },
   ]);
 
-  if(result){
-    return result.category
+  if (result) {
+    return result.category;
   }
 
-  return []
+  return [];
 };

@@ -21,6 +21,12 @@ import cloudinary from "@/cloud/index";
 
 export const create: RequestHandler = async (req: CreateUser, res) => {
   const { email, password, name } = req.body;
+
+  const oldUser = await User.findOne({ email });
+  if (oldUser) {
+    return res.status(409).json({ error: "Email is already in use!" });
+  }
+
   const newUser = await User.create({ email, password, name });
 
   const token = generateToken(6);
@@ -93,8 +99,8 @@ export const sendReVerificationToken: RequestHandler = async (req, res) => {
 
   if (user.verified) {
     return res
-      .status(200)
-      .json({ message: "Your email is already verified. You can log in." });
+      .status(422)
+      .json({ message: "Your account is already verified!" });
   }
 
   await EmailVerificationToken.findOneAndDelete({ owner: userId });
@@ -175,6 +181,10 @@ export const singIn: RequestHandler = async (req, res) => {
 
   const token = Jwt.sign({ userId: user._id }, JWT_SECRET);
   user.tokens.push(token);
+
+  if(user.tokens.length > 5){
+    user.tokens = user.tokens.slice(-5);
+  }
 
   await user.save();
 

@@ -62,13 +62,13 @@ const AudioSchema = new Schema<AudioDocument>(
         type: String,
         required: true,
       },
-      likes: [
-        {
-          type: Types.ObjectId,
-          ref: "User",
-        },
-      ],
     },
+    likes: [
+      {
+        type: Types.ObjectId,
+        ref: "User",
+      },
+    ],
     category: {
       type: String,
       enum: categories,

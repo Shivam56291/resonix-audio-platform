@@ -1,15 +1,13 @@
 <p align="center">
-  <img
-    src="./src/public/logo.png"
-    alt="Resonix Logo"
-    width="140"
-    style="background-color: #ffffff; padding: 12px; border-radius: 14px;"
-  />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./src/public/white-logo.png">
+    <source media="(prefers-color-scheme: light)" srcset="./src/public/logo.png">
+    <img src="./src/public/logo.png" width="140" alt="Resonix Logo">
+  </picture>
 </p>
 
-
 <h1 align="center">
-⚙️ Resonix Backend Server
+Resonix Backend Server
 </h1>
 
 <p align="center">
@@ -27,26 +25,17 @@
 
 ## ✨ Server Responsibilities
 
-<p align="center">
-🔐 Authentication & Authorization &nbsp; • &nbsp;
-📩 Email Verification & Password Reset &nbsp; • &nbsp;
-🧾 Request Validation  
-</p>
+<div align="center">
 
-<p align="center">
-🎵 Audio Upload & Streaming APIs &nbsp; • &nbsp;
-📂 Playlists, Favorites & History &nbsp; • &nbsp;
-🤖 Recommendations & Auto Playlists  
-</p>
+| 🔐 Security & Auth | 🎵 Media & Content | 🧠 Data & Architecture |
+| :----------------: | :----------------: | :--------------------: |
+| **Authentication & Authorization** <br/> Secure user access control | **Audio Upload & Streaming APIs** <br/> Efficient media handling | **Modular Architecture** <br/> Scalable & maintainable design |
+| **Email Verification & Password Reset** <br/> Account recovery flows | **Playlists, Favorites & History** <br/> User content management | **Pagination & Aggregation** <br/> Optimized data fetching |
+| **Request Validation** <br/> Sanitized & verified inputs | **Recommendations & Auto Playlists** <br/> Smart content discovery | **Secure Media URLs** <br/> Protected asset delivery |
 
-<p align="center">
-🛡 Secure Media URLs &nbsp; • &nbsp;
-📊 Pagination & Aggregation &nbsp; • &nbsp;
-🧩 Modular Architecture  
-</p>
+</div>
 
 ---
-
 
 <p align="center">
 MVC Pattern · Type-Safe APIs · Centralized Validation
@@ -56,25 +45,13 @@ MVC Pattern · Type-Safe APIs · Centralized Validation
 
 ## 🛠 Tech Stack
 
-<p align="center">
-<b>Core</b><br/>
-Node.js · Express · TypeScript
-</p>
-
-<p align="center">
-<b>Database</b><br/>
-MongoDB · Mongoose · Aggregation Pipelines
-</p>
-
-<p align="center">
-<b>Security</b><br/>
-JWT · Hashing · Middleware Guards · Secure Tokens
-</p>
-
-<p align="center">
-<b>Utilities</b><br/>
-Yup Validation · Nodemailer · Formidable · Cloud Storage
-</p>
+| 🧱 Layer    | ⚙ Technologies                          |
+| :--------- | :-------------------------------------- |
+| Core       | Node.js, Express, TypeScript            |
+| Database   | MongoDB, Mongoose                       |
+| Security   | JWT, Hashing, Secure Tokens             |
+| Media      | Cloudinary, Formidable                  |
+| Utilities  | Yup, Nodemailer, Cron Jobs              |
 
 ---
 
@@ -83,54 +60,57 @@ Yup Validation · Nodemailer · Formidable · Cloud Storage
 Create a `.env` file in the **server root**.
 
 ```env
-MONGODB_URI=
-PORT=
+# Database
+MONGODB_URI=          # MongoDB connection string
 
-MAILTRAP_USER=
-MAILTRAP_PASS=
+# Server
+PORT=                 # Server port (e.g., 5000)
 
-VERIFICATION_EMAIL=
-PASSWORD_RESET_LINK=
-SIGN_IN_URL=
+# Email (Mailtrap or other SMTP)
+MAILTRAP_USER=        # SMTP username
+MAILTRAP_PASS=        # SMTP password
+VERIFICATION_EMAIL=   # Email address for sending verification emails
+SIGN_IN_URL=          # Frontend login URL
+PASSWORD_RESET_LINK=  # Frontend password reset URL
 
-JWT_SECRET=
+# Security
+JWT_SECRET=           # Secret key for JWT signing
+
+# Cloudinary (for media uploads)
+CLOUD_NAME=           # Cloudinary cloud name
+CLOUD_KEY=            # Cloudinary API key
+CLOUD_SECRET=         # Cloudinary API secret
+
 ```
 
 <p align="center"> ⚠️ Do not commit `.env` to version control </p>
 
 ---
 
-## 🔄 Core API Capabilities
+<div align="center">
 
-<p align="center">
-✔ User Registration & Verification &nbsp; • &nbsp;
-✔ JWT-based Sign In &nbsp; • &nbsp;
-✔ Password Reset Flow
-</p>
+| 🔄 Core API Capabilities | 🔐 Auth | 🎧 Media |
+| :---------------------: | :-----: | :------: |
+| User Registration & Verification | JWT-based Sign In | Audio Upload / Update / Delete |
+| Password Reset Flow | Favorites & Playlists | History & Recently Played |
+| Public Profiles & Followers | Recommendations Engine | &nbsp; |
 
-<p align="center">
-✔ Audio Upload / Update / Delete &nbsp; • &nbsp;
-✔ Favorites & Playlists &nbsp; • &nbsp;
-✔ History & Recently Played
-</p>
-
-<p align="center">
-✔ Public Profiles & Followers &nbsp; • &nbsp;
-✔ Recommendations Engine
-</p>
+</div>
 
 ---
 
-## 🧪 Validation & Middleware
+<div align="center">
 
-<p align="center">
-📌 Yup Schema Validation &nbsp; • &nbsp;
-📌 Central Validator Middleware &nbsp; • &nbsp;
-📌 Auth & isVerified Guards &nbsp; • &nbsp;
-📌 Async Error Handling
-</p>
+| 🧪 Validation | 🛡 Guards | ⚙ Error Handling |
+| :-----------: | :------: | :--------------: |
+| Yup Schema Validation | Auth Guard | Async Error Handling |
+| Central Validator Middleware | isVerified Guard | &nbsp; |
+
+</div>
+
 
 ---
+
 
 ## 🚀 Status
 

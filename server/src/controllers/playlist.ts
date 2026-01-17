@@ -15,19 +15,20 @@ export const createPlaylist: RequestHandler = async (
   const { title, resId, visibility } = req.body;
   const ownerId = req.user.id;
 
+  let items: mongoose.Types.ObjectId[] = [];
+
   if (resId) {
     const audio = await Audio.findById(resId);
     if (!audio) {
       return res.status(404).json({ error: "Could not find the audio!" });
     }
+    items.push(audio._id);
   }
-
-  const newId = new mongoose.Types.ObjectId(resId);
 
   const newPlaylist = new Playlist({
     title,
     owner: ownerId,
-    items: resId ? [newId] : [],
+    items,
     visibility,
   });
 
@@ -66,6 +67,16 @@ export const updatePlaylist: RequestHandler = async (
     }
 
     await Playlist.findByIdAndUpdate(id, { $addToSet: { items: audio._id } });
+
+    await playlist.populate("items");
+
+    res.status(201).json({
+      playlist: {
+        id: playlist._id,
+        title: playlist.title,
+        visibility: playlist.visibility,
+      },
+    });
   }
 
   res.status(201).json({
