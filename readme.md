@@ -1,10 +1,9 @@
 <p align="center">
-  <img
-    src="./server/src/public/logo.png"
-    alt="Resonix Logo"
-    width="160"
-    style="background-color: #ffffff; padding: 12px; border-radius: 14px;"
-  />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./server/src/public/white-logo.png">
+    <source media="(prefers-color-scheme: light)" srcset="./server/src/public/logo.png">
+    <img src="./server/src/public/logo.png" width="140" alt="Resonix Logo">
+  </picture>
 </p>
 
 <h1 align="center">
@@ -31,94 +30,69 @@
 
 ## ✨ Core Capabilities
 
-<p align="center">
-⚡ Authentication & Authorization &nbsp; • &nbsp;
-📩 Email Verification & Password Reset &nbsp; • &nbsp;
-🔐 JWT & Middleware Security  
-</p>
+<div align="center">
 
-<p align="center">
-🎵 Audio Upload & Streaming &nbsp; • &nbsp;
-⏯ Background Playback & Progress Sync &nbsp; • &nbsp;
-🎚 Playback Speed & Controls  
-</p>
+|                                             ⚡ **Authentication & Security**                                             |                                                🎵 **Audio & Playback**                                                 |                                                  📂 **Playlists & History**                                                   |
+| :----------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------: |
+|       ![auth](https://img.shields.io/badge/Auth-Verified-green?style=for-the-badge) Authentication & Authorization       |       ![upload](https://img.shields.io/badge/Upload-Streaming-blue?style=for-the-badge) Audio Upload & Streaming       |        ![playlist](https://img.shields.io/badge/Favorites-Playlists-purple?style=for-the-badge) Playlists & Favorites         |
+| ![email](https://img.shields.io/badge/Email-Verification-yellow?style=for-the-badge) Email Verification & Password Reset | ![bg](https://img.shields.io/badge/Background-Playback-orange?style=for-the-badge) Background Playback & Progress Sync | ![history](https://img.shields.io/badge/History-Recently_Played-pink?style=for-the-badge) Listening History & Recently Played |
+|            ![jwt](https://img.shields.io/badge/JWT-Secure-red?style=for-the-badge) JWT & Middleware Security             |         ![speed](https://img.shields.io/badge/Playback-Speed-cyan?style=for-the-badge) Playback Speed Controls         |     ![auto](https://img.shields.io/badge/Auto-Generated_Playlists-lightgrey?style=for-the-badge) Auto-Generated Playlists     |
 
-<p align="center">
-📂 Playlists & Favorites &nbsp; • &nbsp;
-🕓 Listening History & Recently Played &nbsp; • &nbsp;
-🤖 Auto-Generated Playlists  
-</p>
+</div>
 
 ---
 
 ## 🧠 Backend Architecture
 
-<p align="center">
-🧩 Modular MVC Structure &nbsp; • &nbsp;
-🧪 Yup Schema Validation &nbsp; • &nbsp;
-📦 Type-Safe Request Handling  
-</p>
+<div align="center">
 
-<p align="center">
-📤 File Uploads (Local + Cloud) &nbsp; • &nbsp;
-🗂 MongoDB Aggregations & Pagination &nbsp; • &nbsp;
-🛡 Secure Media URLs  
-</p>
+| 🧩 **Structure & Validation** |      📤 **Upload & Storage**      | 🛡 **Data Security** |
+| :---------------------------: | :-------------------------------: | :------------------: |
+|   Modular MVC Architecture    |   File Uploads (Local + Cloud)    |  Secure Media URLs   |
+|     Yup Schema Validation     | MongoDB Aggregations & Pagination |  Type-Safe Requests  |
+|  Type-Safe Request Handling   |                 —                 |          —           |
+
+</div>
 
 ---
 
-## 📱 Mobile App Highlights (React Native)
+## 📱 Mobile App Highlights
 
-<p align="center">
-🎨 Animated UI (Reanimated + Gesture Handler) &nbsp; • &nbsp;
-🧭 Stack & Tab Navigation  
-</p>
+<div align="center">
 
-<p align="center">
-🧾 Formik + Yup Validation &nbsp; • &nbsp;
-🔔 Global Notifications &nbsp; • &nbsp;
-💾 Async Storage  
-</p>
+|           🎨 **UI & Navigation**           | 🧾 **Forms & Notifications** |        🎼 **Media Player**        |
+| :----------------------------------------: | :--------------------------: | :-------------------------------: |
+| Animated UI (Reanimated + Gesture Handler) |   Formik + Yup Validation    |        Mini & Full Player         |
+|           Stack & Tab Navigation           |     Global Notifications     | Upload Progress & Infinite Scroll |
+|                     —                      |        Async Storage         |                 —                 |
 
-<p align="center">
-🎼 Mini Player & Full Player &nbsp; • &nbsp;
-📊 Upload Progress & Infinite Scroll  
-</p>
+</div>
 
 ---
 
 ## 🛠 Tech Stack
 
-<p align="center">
-<b>Backend</b><br/>
-Node.js · Express · MongoDB · Mongoose · JWT · Yup · Nodemailer
-</p>
+<div align="center">
 
-<p align="center">
-<b>Mobile</b><br/>
-React Native · Redux Toolkit · React Query · Reanimated · Track Player
-</p>
+|  Layer  |                              Technologies                              |
+| :-----: | :--------------------------------------------------------------------: |
+| Backend |    Node.js · Express · MongoDB · Mongoose · JWT · Yup · Nodemailer     |
+| Mobile  | React Native · Redux Toolkit · React Query · Reanimated · Track Player |
+| Tooling |       TypeScript · Git · Postman · Env Variables · Path Aliases        |
 
-<p align="center">
-<b>Tooling</b><br/>
-TypeScript · Git · Postman · Environment Variables · Path Aliases
-</p>
+</div>
 
 ---
 
 ## 🔄 Data Flow & Logic
 
-<p align="center">
-🔐 Auth → Verify → Token → Middleware  
-</p>
+<div align="center">
 
-<p align="center">
-🎧 Upload → Process → Stream → Track Progress  
-</p>
+|          🔐 **Auth Flow**          |             🎧 **Audio Flow**              |          📊 **Listening Flow**           |
+| :--------------------------------: | :----------------------------------------: | :--------------------------------------: |
+| Auth → Verify → Token → Middleware | Upload → Process → Stream → Track Progress | Listen → History → Recommendation Engine |
 
-<p align="center">
-📊 Listen → History → Recommendation Engine  
-</p>
+</div>
 
 ---
 
