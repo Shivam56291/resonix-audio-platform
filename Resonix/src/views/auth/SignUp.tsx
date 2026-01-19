@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { FC, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as yup from 'yup';
@@ -7,6 +7,9 @@ import colors from '@utils/colors';
 import AuthInputField from '@components/form/AuthInputField';
 import Form from '@components/form';
 import SubmitBtn from '@components/form/SubmitBtn';
+import PasswordVisibilityIcon from '@ui/PasswordVisibilityIcon';
+import AppLink from '@ui/AppLink';
+import AuthFormContainer from 'components/form/AuthFormContainer';
 
 const signUpSchema = yup.object({
   name: yup
@@ -41,6 +44,12 @@ const initialValues = {
 };
 
 const SignUp: FC<Props> = () => {
+  const [secureEntry, setSecureEntry] = useState(true);
+
+  const togglePasswordVisibility = () => {
+    setSecureEntry(!secureEntry);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <Form
@@ -50,41 +59,55 @@ const SignUp: FC<Props> = () => {
         }}
         validationSchema={signUpSchema}
       >
-        <View style={styles.formContainer}>
-          <AuthInputField
-            placeholder="John Doe"
-            label="Full Name"
-            keyboardType="default"
-            returnKeyType="next"
-            autoCapitalize="words"
-            secureTextEntry={false}
-            containerStyle={styles.marginBottom}
-            name="name"
-          />
+        <AuthFormContainer heading="Sign Up" subHeading="Create an account">
+          <View style={styles.formContainer}>
+            <AuthInputField
+              placeholder="John Doe"
+              label="Full Name"
+              keyboardType="default"
+              returnKeyType="next"
+              autoCapitalize="words"
+              secureTextEntry={false}
+              containerStyle={styles.marginBottom}
+              name="name"
+            />
 
-          <AuthInputField
-            placeholder="johndoe@example.com"
-            label="Email"
-            keyboardType="email-address"
-            returnKeyType="next"
-            autoCapitalize="none"
-            secureTextEntry={false}
-            containerStyle={styles.marginBottom}
-            name="email"
-          />
+            <AuthInputField
+              placeholder="johndoe@example.com"
+              label="Email"
+              keyboardType="email-address"
+              returnKeyType="next"
+              autoCapitalize="none"
+              secureTextEntry={false}
+              containerStyle={styles.marginBottom}
+              name="email"
+            />
 
-          <AuthInputField
-            placeholder="********"
-            label="Password"
-            keyboardType="default"
-            returnKeyType="done"
-            autoCapitalize="none"
-            secureTextEntry={true}
-            name="password"
-            containerStyle={styles.marginBottom}
-          />
-          <SubmitBtn title="Sign Up" />
-        </View>
+            <AuthInputField
+              placeholder="********"
+              label="Password"
+              keyboardType="default"
+              returnKeyType="done"
+              autoCapitalize="none"
+              secureTextEntry={secureEntry}
+              name="password"
+              containerStyle={styles.marginBottom}
+              rightIcon={
+                <PasswordVisibilityIcon
+                  privateIcon={secureEntry}
+                  onPress={togglePasswordVisibility}
+                />
+              }
+              onRightIconPress={togglePasswordVisibility}
+            />
+            <SubmitBtn title="Sign Up" />
+
+            <View style={styles.linksContainer}>
+              <AppLink title="I Lost My Password" onPress={() => {}} />
+              <AppLink title="Sign In" onPress={() => {}} />
+            </View>
+          </View>
+        </AuthFormContainer>
       </Form>
     </SafeAreaView>
   );
@@ -92,14 +115,12 @@ const SignUp: FC<Props> = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+        flex: 1,
     backgroundColor: colors.PRIMARY,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   formContainer: {
     width: '100%',
-    paddingHorizontal: 15,
+    paddingHorizontal: 25,
   },
   input: {
     borderWidth: 2,
@@ -112,6 +133,16 @@ const styles = StyleSheet.create({
   marginBottom: {
     marginBottom: 20,
   },
+  linksContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
+    paddingHorizontal: 10,
+  },
+  // headerContainer: {
+  //   alignItems: 'center',
+  //   marginBottom: 20,
+  // },
 });
 
 export default SignUp;
