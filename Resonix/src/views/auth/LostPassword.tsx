@@ -2,6 +2,7 @@ import { FC } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as yup from 'yup';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
 
 import colors from '@utils/colors';
 import AuthInputField from '@components/form/AuthInputField';
@@ -9,6 +10,7 @@ import Form from '@components/form';
 import SubmitBtn from '@components/form/SubmitBtn';
 import AppLink from '@ui/AppLink';
 import AuthFormContainer from '@components/form/AuthFormContainer';
+import { AuthStackParamList } from '../../@types/navigation';
 
 const lostPasswordSchema = yup.object({
   email: yup
@@ -28,6 +30,8 @@ const initialValues = {
 };
 
 const LostPassword: FC<Props> = () => {
+  const navigation = useNavigation<NavigationProp<AuthStackParamList>>();
+
   return (
     <SafeAreaView style={styles.container}>
       <Form
@@ -57,11 +61,15 @@ const LostPassword: FC<Props> = () => {
             <View style={styles.linksContainer}>
               <AppLink
                 title="Remembered your password? Sign In"
-                onPress={() => {}}
+                onPress={() => {
+                  navigation.navigate('SignIn');
+                }}
               />
               <AppLink
                 title="Don't have an account? Sign Up"
-                onPress={() => {}}
+                onPress={() => {
+                  navigation.navigate('SignUp');
+                }}
               />
             </View>
           </View>

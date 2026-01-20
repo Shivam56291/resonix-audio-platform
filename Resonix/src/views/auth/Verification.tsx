@@ -7,12 +7,21 @@ import AppLink from '@ui/AppLink';
 import AuthFormContainer from '@components/form/AuthFormContainer';
 import OTPField from '@views/auth/OTPField';
 import AppButton from '@ui/AppButton';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { AuthStackParamList } from 'src/@types/navigation';
+import client from 'api/client';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
 
 const OTP_LENGTH = 6;
 
-const Verification: FC = () => {
+type Props = NativeStackScreenProps<AuthStackParamList, 'Verification'>;
+
+const Verification: FC<Props> = props => {
+  const navigation = useNavigation<NavigationProp<AuthStackParamList>>();
   const [otp, setOtp] = useState<string[]>(new Array(OTP_LENGTH).fill(''));
   const inputRefs = useRef<Array<TextInput | null>>([]);
+
+  const { userInfo } = props.route.params;
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -23,23 +32,6 @@ const Verification: FC = () => {
 
   const handleChangeText = (text: string, index: number) => {
     const newOtp = [...otp];
-
-    // if (text.length === 6) {
-    //   const digits = text
-    //     .replace(/\D/g, '') // keep only numbers
-    //     .slice(0, OTP_LENGTH - index)
-    //     .split('');
-
-    //   digits.forEach((digit, i) => {
-    //     newOtp[index + i] = digit;
-    //   });
-
-    //   setOtp(newOtp);
-
-    //   const nextIndex = Math.min(index + digits.length - 1, OTP_LENGTH - 1);
-    //   inputRefs.current[nextIndex]?.focus();
-    //   return;
-    // }
 
     if (text.length === 6) {
       Keyboard.dismiss();
@@ -77,6 +69,26 @@ const Verification: FC = () => {
     }
   };
 
+  const isValidOtp = otp.every(digit => {
+    return digit.trim() !== '';
+  });
+
+  const handleOTPSubmit = async () => {
+    console.log(userInfo.user);
+    console.log(otp.join(''));
+
+    if (!isValidOtp) return;
+    try {
+      await client.post('/auth/verify-email', {
+        userId: userInfo.user,
+        token: otp.join(''),
+      });
+      navigation.navigate('SignIn');
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <AuthFormContainer
@@ -103,7 +115,7 @@ const Verification: FC = () => {
             ))}
           </View>
 
-          <AppButton title="Submit" onPress={() =>{}} />
+          <AppButton title="Submit" onPress={handleOTPSubmit} />
 
           <View style={styles.linksContainer}>
             <AppLink title="Re-send OTP" />

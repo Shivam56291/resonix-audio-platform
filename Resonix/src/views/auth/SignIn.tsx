@@ -10,6 +10,8 @@ import SubmitBtn from '@components/form/SubmitBtn';
 import PasswordVisibilityIcon from '@ui/PasswordVisibilityIcon';
 import AppLink from '@ui/AppLink';
 import AuthFormContainer from '@components/form/AuthFormContainer';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { AuthStackParamList } from '../../@types/navigation';
 
 const signInSchema = yup.object({
   email: yup
@@ -23,7 +25,7 @@ const signInSchema = yup.object({
   password: yup
     .string()
     .trim('Password is missing!')
-    .required('Password is required!')
+    .required('Password is required!'),
 });
 
 interface Props {}
@@ -35,6 +37,8 @@ const initialValues = {
 
 const SignIn: FC<Props> = () => {
   const [secureEntry, setSecureEntry] = useState(true);
+
+  const navigation = useNavigation<NavigationProp<AuthStackParamList>>();
 
   const togglePasswordVisibility = () => {
     setSecureEntry(!secureEntry);
@@ -49,9 +53,11 @@ const SignIn: FC<Props> = () => {
         }}
         validationSchema={signInSchema}
       >
-        <AuthFormContainer heading="Welcome Back !" subHeading="Sign in to continue and access your account">
+        <AuthFormContainer
+          heading="Welcome Back !"
+          subHeading="Sign in to continue and access your account"
+        >
           <View style={styles.formContainer}>
-
             <AuthInputField
               placeholder="Email address"
               label="Email"
@@ -83,8 +89,18 @@ const SignIn: FC<Props> = () => {
             <SubmitBtn title="Sign In" />
 
             <View style={styles.linksContainer}>
-              <AppLink title="I Lost My Password" onPress={() => {}} />
-              <AppLink title="Sign Up" onPress={() => {}} />
+              <AppLink
+                title="I Lost My Password"
+                onPress={() => {
+                  navigation.navigate('LostPassword');
+                }}
+              />
+              <AppLink
+                title="Sign Up"
+                onPress={() => {
+                  navigation.navigate('SignUp');
+                }}
+              />
             </View>
           </View>
         </AuthFormContainer>
@@ -95,7 +111,7 @@ const SignIn: FC<Props> = () => {
 
 const styles = StyleSheet.create({
   container: {
-        flex: 1,
+    flex: 1,
     backgroundColor: colors.PRIMARY,
   },
   formContainer: {

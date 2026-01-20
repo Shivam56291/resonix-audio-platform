@@ -5,14 +5,15 @@ import colors from '@utils/colors';
 interface Props {
   title: string;
   onPress?: () => void;
+  disabled?: boolean;
 }
 
-const AppButton: FC<Props> = ({ title, onPress }) => {
+const AppButton: FC<Props> = ({ title, onPress, disabled }) => {
   return (
     <Pressable style={({ pressed }) => [
         styles.container,
         pressed && styles.pressed,
-      ]} onPress={onPress}>
+      ]} onPress={onPress} disabled={disabled}>
       <Text style={styles.title}>{title}</Text>
     </Pressable>
   );

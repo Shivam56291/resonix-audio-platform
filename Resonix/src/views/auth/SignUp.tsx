@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as yup from 'yup';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
 
 import colors from '@utils/colors';
 import AuthInputField from '@components/form/AuthInputField';
@@ -15,7 +16,10 @@ import Form from '@components/form';
 import SubmitBtn from '@components/form/SubmitBtn';
 import PasswordVisibilityIcon from '@ui/PasswordVisibilityIcon';
 import AppLink from '@ui/AppLink';
-import AuthFormContainer from 'components/form/AuthFormContainer';
+import AuthFormContainer from '@components/form/AuthFormContainer';
+import { AuthStackParamList } from '../../@types/navigation';
+import TermsCheckbox from '@views/auth/TermsCheckbox';
+import client from 'src/api/client';
 
 const signUpSchema = yup.object({
   name: yup
@@ -49,11 +53,33 @@ const initialValues = {
   password: '',
 };
 
+interface NewUser {
+  name: string;
+  email: string;
+  password: string;
+}
+
 const SignUp: FC<Props> = () => {
   const [secureEntry, setSecureEntry] = useState(true);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+
+  const navigation = useNavigation<NavigationProp<AuthStackParamList>>();
 
   const togglePasswordVisibility = () => {
     setSecureEntry(!secureEntry);
+  };
+
+  const handleFormSubmit = async (values: NewUser) => {
+    try {
+      const response = await client.post('/auth/create', {
+        ...values,
+      });
+      navigation.navigate('Verification', {
+        userInfo: response.data,
+      });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -69,9 +95,7 @@ const SignUp: FC<Props> = () => {
         >
           <Form
             initialValues={initialValues}
-            onSubmit={values => {
-              console.log(values);
-            }}
+            onSubmit={handleFormSubmit}
             validationSchema={signUpSchema}
           >
             <AuthFormContainer
@@ -118,16 +142,17 @@ const SignUp: FC<Props> = () => {
                   }
                   onRightIconPress={togglePasswordVisibility}
                 />
-                <SubmitBtn title="Sign Up" />
+                <SubmitBtn title="Sign Up" disabled={!termsAccepted} />
 
                 <View style={styles.linksContainer}>
-                  <AppLink
-                    title="By signing up, you agree to our Terms & Privacy Policy"
-                    onPress={() => {}}
+                  <TermsCheckbox
+                    onToggle={checked => setTermsAccepted(checked)}
                   />
                   <AppLink
                     title="Already have an account? Sign In"
-                    onPress={() => {}}
+                    onPress={() => {
+                      navigation.navigate('SignIn');
+                    }}
                   />
                 </View>
               </View>
@@ -154,15 +179,17 @@ const styles = StyleSheet.create({
     height: 45,
     borderRadius: 23,
     color: colors.CONTRAST,
-    padding: 10,
+    paddingHorizontal: 10,
   },
   marginBottom: {
-    marginBottom: 20,
+    marginBottom: 15,
   },
   linksContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginTop: 20,
+    gap: 10,
     paddingHorizontal: 10,
   },
   // headerContainer: {

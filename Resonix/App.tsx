@@ -1,18 +1,18 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { NavigationContainer } from '@react-navigation/native';
 import { StyleSheet, StatusBar } from 'react-native';
 
 import colors from '@utils/colors';
-import Verification from '@views/auth/Verification';
+import AuthNavigator from 'navigation/AuthNavigator';
 
 const App = () => {
   return (
     <>
       <StatusBar backgroundColor={colors.PRIMARY} barStyle="light-content" />
       <SafeAreaView style={styles.container}>
-        {/* <SignUp /> */}
-        {/* <SignIn /> */}
-        {/* <LostPassword /> */}
-        <Verification />
+        <NavigationContainer>
+          <AuthNavigator />
+        </NavigationContainer>
       </SafeAreaView>
     </>
   );

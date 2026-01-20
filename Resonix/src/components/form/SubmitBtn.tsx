@@ -4,12 +4,21 @@ import { useFormikContext } from 'formik';
 
 interface Props {
   title: string;
+  disabled?: boolean;
 }
 
 const SubmitBtn: FC<Props> = props => {
-  const { handleSubmit } = useFormikContext();
+  const { handleSubmit, isValid, dirty } = useFormikContext();
 
-  return <AppButton title={props.title} onPress={handleSubmit} />;
+  const isDisabled = props.disabled ?? !(isValid && dirty);
+
+  return (
+    <AppButton
+      title={props.title}
+      onPress={handleSubmit}
+      disabled={isDisabled}
+    />
+  );
 };
 
 export default SubmitBtn;
