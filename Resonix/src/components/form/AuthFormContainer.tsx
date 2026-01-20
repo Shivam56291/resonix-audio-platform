@@ -35,9 +35,14 @@ const AuthFormContainer: FC<Props> = ({ children, heading, subHeading }) => {
   const dynamicStyles = getDynamicStyles(width, height);
 
   const fadeOpacity = useSharedValue(0);
-  const animatedStyle = useAnimatedStyle(() => {
+  const fadeInStyle = useAnimatedStyle(() => {
     return {
       opacity: fadeOpacity.value,
+      transform: [
+        {
+          scale: 0.85 + fadeOpacity.value * 0.15,
+        },
+      ],
     };
   });
 
@@ -46,12 +51,23 @@ const AuthFormContainer: FC<Props> = ({ children, heading, subHeading }) => {
   }, [fadeOpacity]);
   return (
     <View style={styles.container}>
-      <CircleUi size={cricleSize} position="top-left" />
-      <CircleUi size={cricleSize} position="top-right" />
-      <CircleUi size={cricleSize} position="bottom-left" />
-      <CircleUi size={cricleSize} position="bottom-right" />
+      <Animated.View style={[StyleSheet.absoluteFill, fadeInStyle]}>
+        <CircleUi size={cricleSize} position="top-left" />
+      </Animated.View>
 
-      <Animated.View style={[styles.headerContainer, animatedStyle]}>
+      <Animated.View style={[StyleSheet.absoluteFill, fadeInStyle]}>
+        <CircleUi size={cricleSize} position="top-right" />
+      </Animated.View>
+
+      <Animated.View style={[StyleSheet.absoluteFill, fadeInStyle]}>
+        <CircleUi size={cricleSize} position="bottom-left" />
+      </Animated.View>
+
+      <Animated.View style={[StyleSheet.absoluteFill, fadeInStyle]}>
+        <CircleUi size={cricleSize} position="bottom-right" />
+      </Animated.View>
+
+      <Animated.View style={[styles.headerContainer, fadeInStyle]}>
         <Image
           style={dynamicStyles.logo}
           source={require('@assets/light-logo.png')}
@@ -59,6 +75,7 @@ const AuthFormContainer: FC<Props> = ({ children, heading, subHeading }) => {
         <Text style={styles.welcomeText}>{heading}</Text>
         <Text style={styles.subText}>{subHeading}</Text>
       </Animated.View>
+
       {children}
     </View>
   );
