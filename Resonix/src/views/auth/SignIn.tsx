@@ -12,6 +12,13 @@ import AppLink from '@ui/AppLink';
 import AuthFormContainer from '@components/form/AuthFormContainer';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { AuthStackParamList } from '../../@types/navigation';
+import client from 'api/client';
+import { FormikHelpers } from 'formik';
+
+interface SignInUser {
+  email: string;
+  password: string;
+}
 
 const signInSchema = yup.object({
   email: yup
@@ -44,13 +51,28 @@ const SignIn: FC<Props> = () => {
     setSecureEntry(!secureEntry);
   };
 
+  const handleFormSubmit = async (
+    values: SignInUser,
+    actions: FormikHelpers<SignInUser>,
+  ) => {
+    try {
+      actions.setSubmitting(true);
+      const response = await client.post('/auth/sign-in', {
+        ...values,
+      });
+      console.log(response.data);
+    } catch (error) {
+      console.log('Sign in error', error);
+    } finally {
+      actions.setSubmitting(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <Form
         initialValues={initialValues}
-        onSubmit={values => {
-          console.log(values);
-        }}
+        onSubmit={handleFormSubmit}
         validationSchema={signInSchema}
       >
         <AuthFormContainer

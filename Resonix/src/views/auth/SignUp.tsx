@@ -20,6 +20,7 @@ import AuthFormContainer from '@components/form/AuthFormContainer';
 import { AuthStackParamList } from '../../@types/navigation';
 import TermsCheckbox from '@views/auth/TermsCheckbox';
 import client from 'src/api/client';
+import { FormikHelpers } from 'formik';
 
 const signUpSchema = yup.object({
   name: yup
@@ -69,8 +70,12 @@ const SignUp: FC<Props> = () => {
     setSecureEntry(!secureEntry);
   };
 
-  const handleFormSubmit = async (values: NewUser) => {
+  const handleFormSubmit = async (
+    values: NewUser,
+    actions: FormikHelpers<NewUser>,
+  ) => {
     try {
+      actions.setSubmitting(true);
       const response = await client.post('/auth/create', {
         ...values,
       });
@@ -79,6 +84,8 @@ const SignUp: FC<Props> = () => {
       });
     } catch (error) {
       console.log(error);
+    } finally {
+      actions.setSubmitting(false);
     }
   };
 
@@ -142,7 +149,7 @@ const SignUp: FC<Props> = () => {
                   }
                   onRightIconPress={togglePasswordVisibility}
                 />
-                <SubmitBtn title="Sign Up" disabled={!termsAccepted} />
+                <SubmitBtn title="Sign Up" disabled={!termsAccepted } />
 
                 <View style={styles.linksContainer}>
                   <TermsCheckbox

@@ -1,5 +1,5 @@
 import { FC, useEffect, useRef, useState } from 'react';
-import { Keyboard, StyleSheet, TextInput, View } from 'react-native';
+import { Keyboard, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import colors from '@utils/colors';
@@ -20,6 +20,9 @@ const Verification: FC<Props> = props => {
   const navigation = useNavigation<NavigationProp<AuthStackParamList>>();
   const [otp, setOtp] = useState<string[]>(new Array(OTP_LENGTH).fill(''));
   const inputRefs = useRef<Array<TextInput | null>>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [countDown, setCountDown] = useState(60);
+  const [canSendNewOtpRequest, setCanSendNewOtpRequest] = useState(false);
 
   const { userInfo } = props.route.params;
 
@@ -74,11 +77,9 @@ const Verification: FC<Props> = props => {
   });
 
   const handleOTPSubmit = async () => {
-    console.log(userInfo.user);
-    console.log(otp.join(''));
-
     if (!isValidOtp) return;
     try {
+      setIsSubmitting(true);
       await client.post('/auth/verify-email', {
         userId: userInfo.user,
         token: otp.join(''),
@@ -86,8 +87,41 @@ const Verification: FC<Props> = props => {
       navigation.navigate('SignIn');
     } catch (error) {
       console.log(error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
+  const handleResendOTP = async () => {
+    setCountDown(60);
+    setCanSendNewOtpRequest(false);
+    try {
+      setIsSubmitting(true);
+      await client.post('/auth/re-verify-email', {
+        userId: userInfo.user,
+      });
+    } catch (error) {
+      console.log('Requestion for new otp: ', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  useEffect(() => {
+    if (canSendNewOtpRequest) return;
+
+    const timer = setInterval(() => {
+      setCountDown(prevCount => {
+        if (prevCount <= 0) {
+          setCanSendNewOtpRequest(true);
+          clearInterval(timer);
+          return 0;
+        }
+        return prevCount - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [canSendNewOtpRequest]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -115,10 +149,22 @@ const Verification: FC<Props> = props => {
             ))}
           </View>
 
-          <AppButton title="Submit" onPress={handleOTPSubmit} />
+          <AppButton
+            title="Submit"
+            onPress={handleOTPSubmit}
+            busy={isSubmitting}
+            disabled={isSubmitting}
+          />
 
           <View style={styles.linksContainer}>
-            <AppLink title="Re-send OTP" />
+            {countDown > 0 && (
+              <Text style={styles.countDown}>{countDown} sec</Text>
+            )}
+            <AppLink
+              active={canSendNewOtpRequest}
+              title="Re-send OTP"
+              onPress={handleResendOTP}
+            />
           </View>
         </View>
       </AuthFormContainer>
@@ -150,6 +196,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginVertical: 25,
     marginBottom: 20,
+  },
+  countDown: {
+    color: colors.SECONDARY,
+    marginRight: 10,
   },
 });
 
