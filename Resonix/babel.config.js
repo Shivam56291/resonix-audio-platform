@@ -37,5 +37,7 @@ module.exports = {
       },
     ],
     ['react-native-worklets/plugin', workletsPluginOptions],
+    ['react-native-bootsplash/plugin'],
+    ['react-native-reanimated/plugin'],
   ],
 };

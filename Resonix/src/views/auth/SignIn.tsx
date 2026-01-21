@@ -16,6 +16,7 @@ import { AuthStackParamList } from 'src/@types/navigation';
 import client from 'src/api/client';
 import { updateLoggedInState, updateProfile } from 'store/auth';
 import { useDispatch } from 'react-redux';
+import { Keys, saveToAsyncStorage } from 'utils/asyncStorage';
 
 interface SignInUser {
   email: string;
@@ -61,6 +62,7 @@ const SignIn: FC<Props> = () => {
       const response = await client.post('/auth/sign-in', {
         ...values,
       });
+      await saveToAsyncStorage(Keys.AUTH_TOKEN, response.data.token);
       dispatch(updateProfile(response.data));
       dispatch(updateLoggedInState(true));
     } catch (error: any) {
