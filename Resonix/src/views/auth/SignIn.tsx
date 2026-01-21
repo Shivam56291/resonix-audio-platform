@@ -2,6 +2,8 @@ import { FC, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as yup from 'yup';
+import { FormikHelpers } from 'formik';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
 
 import colors from '@utils/colors';
 import AuthInputField from '@components/form/AuthInputField';
@@ -10,10 +12,10 @@ import SubmitBtn from '@components/form/SubmitBtn';
 import PasswordVisibilityIcon from '@ui/PasswordVisibilityIcon';
 import AppLink from '@ui/AppLink';
 import AuthFormContainer from '@components/form/AuthFormContainer';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
-import { AuthStackParamList } from '../../@types/navigation';
-import client from 'api/client';
-import { FormikHelpers } from 'formik';
+import { AuthStackParamList } from 'src/@types/navigation';
+import client from 'src/api/client';
+import { updateLoggedInState, updateProfile } from 'store/auth';
+import { useDispatch } from 'react-redux';
 
 interface SignInUser {
   email: string;
@@ -23,16 +25,13 @@ interface SignInUser {
 const signInSchema = yup.object({
   email: yup
     .string()
-    .trim('Email is missing!')
-    .required('Email is required!')
+    .trim()
+    .required('Email is missing!')
     .matches(
       /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
       'Enter a valid email address',
     ),
-  password: yup
-    .string()
-    .trim('Password is missing!')
-    .required('Password is required!'),
+  password: yup.string().trim().required('Password is missing!'),
 });
 
 interface Props {}
@@ -47,6 +46,8 @@ const SignIn: FC<Props> = () => {
 
   const navigation = useNavigation<NavigationProp<AuthStackParamList>>();
 
+  const dispatch = useDispatch();
+
   const togglePasswordVisibility = () => {
     setSecureEntry(!secureEntry);
   };
@@ -60,9 +61,11 @@ const SignIn: FC<Props> = () => {
       const response = await client.post('/auth/sign-in', {
         ...values,
       });
-      console.log(response.data);
-    } catch (error) {
-      console.log('Sign in error', error);
+      dispatch(updateProfile(response.data));
+      dispatch(updateLoggedInState(true));
+    } catch (error: any) {
+      console.log('STATUS:', error.response?.status);
+      console.log('DATA:', error.response?.data);
     } finally {
       actions.setSubmitting(false);
     }

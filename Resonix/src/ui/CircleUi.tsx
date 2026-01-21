@@ -1,5 +1,6 @@
 import { FC } from 'react';
 import { FlexStyle, View, ViewStyle } from 'react-native';
+
 import colors from '@utils/colors';
 
 interface Props {

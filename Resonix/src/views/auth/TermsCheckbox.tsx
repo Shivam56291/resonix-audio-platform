@@ -1,5 +1,6 @@
 import { FC, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Linking } from 'react-native';
+
 import colors from '@utils/colors';
 
 const TermsCheckbox: FC<{ onToggle?: (checked: boolean) => void }> = ({ onToggle }) => {

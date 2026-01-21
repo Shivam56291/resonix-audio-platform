@@ -1,13 +1,13 @@
 import { FC, useEffect } from 'react';
 import Feather from 'react-native-vector-icons/Feather';
-
-import colors from '@utils/colors';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withRepeat,
   withTiming,
 } from 'react-native-reanimated';
+
+import colors from '@utils/colors';
 
 interface Props {
   color?: string;

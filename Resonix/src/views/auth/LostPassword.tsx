@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as yup from 'yup';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { FormikHelpers } from 'formik';
 
 import colors from '@utils/colors';
 import AuthInputField from '@components/form/AuthInputField';
@@ -10,13 +11,14 @@ import Form from '@components/form';
 import SubmitBtn from '@components/form/SubmitBtn';
 import AppLink from '@ui/AppLink';
 import AuthFormContainer from '@components/form/AuthFormContainer';
-import { AuthStackParamList } from '../../@types/navigation';
+import { AuthStackParamList } from 'src/@types/navigation';
+import client from 'src/api/client';
 
 const lostPasswordSchema = yup.object({
   email: yup
     .string()
-    .trim('Email is missing!')
-    .required('Email is required!')
+    .trim()
+    .required('Email is missing!')
     .matches(
       /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
       'Enter a valid email address',
@@ -25,6 +27,10 @@ const lostPasswordSchema = yup.object({
 
 interface Props {}
 
+interface FormValues {
+  email: string;
+}
+
 const initialValues = {
   email: '',
 };
@@ -32,13 +38,26 @@ const initialValues = {
 const LostPassword: FC<Props> = () => {
   const navigation = useNavigation<NavigationProp<AuthStackParamList>>();
 
+  const handleLostPasswordSubmit = async (
+    values: FormValues,
+    actions: FormikHelpers<FormValues>,
+  ) => {
+    try {
+      actions.setSubmitting(true);
+      await client.post('/auth/forget-password', {...values});
+      navigation.navigate('SignIn');
+    } catch (error) {
+      console.log(error);
+    } finally {
+      actions.setSubmitting(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <Form
         initialValues={initialValues}
-        onSubmit={values => {
-          console.log(values);
-        }}
+        onSubmit={handleLostPasswordSubmit}
         validationSchema={lostPasswordSchema}
       >
         <AuthFormContainer

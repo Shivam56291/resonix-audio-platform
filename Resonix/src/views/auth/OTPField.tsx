@@ -1,5 +1,6 @@
 import { forwardRef } from 'react';
 import { StyleSheet, TextInput, TextInputProps } from 'react-native';
+
 import colors from '@utils/colors';
 
 interface Props extends TextInputProps {}

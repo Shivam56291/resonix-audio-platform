@@ -1,6 +1,7 @@
 import { FC, useEffect, useRef, useState } from 'react';
 import { Keyboard, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
 
 import colors from '@utils/colors';
 import AppLink from '@ui/AppLink';
@@ -9,8 +10,8 @@ import OTPField from '@views/auth/OTPField';
 import AppButton from '@ui/AppButton';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AuthStackParamList } from 'src/@types/navigation';
-import client from 'api/client';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
+import client from 'src/api/client';
+
 
 const OTP_LENGTH = 6;
 

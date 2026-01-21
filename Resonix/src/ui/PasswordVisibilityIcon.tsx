@@ -1,6 +1,7 @@
 import { FC } from 'react';
 import { Pressable } from 'react-native';
 import Icon from 'react-native-vector-icons/Entypo';
+
 import colors from '@utils/colors';
 
 interface Props {

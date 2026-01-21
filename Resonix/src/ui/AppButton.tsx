@@ -13,11 +13,15 @@ interface Props {
 const AppButton: FC<Props> = ({ title, onPress, disabled, busy }) => {
   return (
     <Pressable
-      style={({ pressed }) => [styles.container, pressed && styles.pressed]}
+      style={({ pressed }) => [
+        styles.container,
+        disabled && styles.disabled,
+        pressed && !disabled && styles.pressed,
+      ]}
       onPress={onPress}
-      disabled={disabled}
+      disabled={disabled || busy}
     >
-      {!busy ? <Text style={styles.title}>{title}</Text> : <Loader />}
+      {busy ? <Loader /> : <Text style={styles.title}>{title}</Text>}
     </Pressable>
   );
 };
@@ -38,6 +42,9 @@ const styles = StyleSheet.create({
   pressed: {
     opacity: 0.7,
     transform: [{ scale: 0.98 }],
+  },
+  disabled: {
+    opacity: 0.5,
   },
 });
 

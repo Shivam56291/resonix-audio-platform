@@ -8,9 +8,9 @@ interface Props {
 }
 
 const SubmitBtn: FC<Props> = props => {
-  const { handleSubmit, isValid, dirty, isSubmitting } = useFormikContext();
+  const { handleSubmit, isSubmitting } = useFormikContext();
 
-  const isDisabled = props.disabled ?? !(isValid && dirty);
+  const isDisabled = props.disabled;
 
   return (
     <AppButton

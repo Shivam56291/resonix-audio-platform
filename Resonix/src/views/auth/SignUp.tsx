@@ -9,6 +9,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as yup from 'yup';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { FormikHelpers } from 'formik';
 
 import colors from '@utils/colors';
 import AuthInputField from '@components/form/AuthInputField';
@@ -17,29 +18,28 @@ import SubmitBtn from '@components/form/SubmitBtn';
 import PasswordVisibilityIcon from '@ui/PasswordVisibilityIcon';
 import AppLink from '@ui/AppLink';
 import AuthFormContainer from '@components/form/AuthFormContainer';
-import { AuthStackParamList } from '../../@types/navigation';
+import { AuthStackParamList } from 'src/@types/navigation';
 import TermsCheckbox from '@views/auth/TermsCheckbox';
 import client from 'src/api/client';
-import { FormikHelpers } from 'formik';
 
 const signUpSchema = yup.object({
   name: yup
     .string()
-    .trim('Name is missing!')
-    .required('Name is required!')
+    .trim()
+    .required('Name is missing!')
     .min(3, 'Name must be at least 3 characters'),
   email: yup
     .string()
-    .trim('Email is missing!')
-    .required('Email is required!')
+    .trim()
+    .required('Email is missing!')
     .matches(
       /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
       'Enter a valid email address',
     ),
   password: yup
     .string()
-    .trim('Password is missing!')
-    .required('Password is required!')
+    .trim()
+    .required('Password is missing!')
     .matches(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
       'Password is too weak!',
@@ -149,7 +149,7 @@ const SignUp: FC<Props> = () => {
                   }
                   onRightIconPress={togglePasswordVisibility}
                 />
-                <SubmitBtn title="Sign Up" disabled={!termsAccepted } />
+                <SubmitBtn title="Sign Up" disabled={!termsAccepted} />
 
                 <View style={styles.linksContainer}>
                   <TermsCheckbox

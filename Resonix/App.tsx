@@ -1,18 +1,19 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { NavigationContainer } from '@react-navigation/native';
 import { StyleSheet, StatusBar } from 'react-native';
+import { Provider } from 'react-redux';
 
 import colors from '@utils/colors';
-import AuthNavigator from 'navigation/AuthNavigator';
+import store from 'src/store';
+import AppNavigator from 'src/navigation';
 
 const App = () => {
   return (
     <>
       <StatusBar backgroundColor={colors.PRIMARY} barStyle="light-content" />
       <SafeAreaView style={styles.container}>
-        <NavigationContainer>
-          <AuthNavigator />
-        </NavigationContainer>
+        <Provider store={store}>
+          <AppNavigator />
+        </Provider>
       </SafeAreaView>
     </>
   );
