@@ -1,16 +1,20 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useSelector, useDispatch } from 'react-redux';
-import { useEffect } from 'react';
-import { View, StyleSheet } from 'react-native';
 
-import { getAuthState, updateBusyState } from 'src/store/auth';
+import { getAuthState } from 'src/store/auth';
 import AuthNavigator from './AuthNavigator';
 import TabNavigator from './TabNavigator';
+import { useEffect } from 'react';
 import { getFromAsyncStorage, Keys } from 'utils/asyncStorage';
 import client from 'src/api/client';
-import { updateProfile, updateLoggedInState } from 'src/store/auth';
-import Loader from 'ui/Loader';
-import colors from 'utils/colors';
+import {
+  updateLoggedInState,
+  updateProfile,
+  updateBusyState,
+} from 'store/auth';
+import Loader from '@ui/Loader';
+import colors from '@utils/colors';
+import { View, StyleSheet } from 'react-native';
 
 const Stack = createNativeStackNavigator();
 
@@ -33,25 +37,29 @@ const RootNavigator = () => {
             Authorization: `Bearer ${token}`,
           },
         });
+
         dispatch(updateProfile(data.profile));
         dispatch(updateLoggedInState(true));
       } catch (error) {
-        console.log('Auth error : ', error);
+        console.log('Auth Error', error);
       } finally {
         dispatch(updateBusyState(false));
       }
     };
+
     fetchAuthInfo();
   }, [dispatch]);
 
-
   if (busy) {
-    return (
-      <View style={styles.loaderContainer}>
-        <Loader size={60} color={colors.SECONDARY} />
+  return (
+    <View style={styles.loaderScreen}>
+      <View style={styles.loaderCard}>
+        <Loader color={colors.SECONDARY} size={32} />
       </View>
-    );
-  }
+    </View>
+  );
+}
+
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -72,20 +80,32 @@ const RootNavigator = () => {
   );
 };
 
-export default RootNavigator;
-
 const styles = StyleSheet.create({
-  loaderContainer: {
+  loaderScreen: {
     flex: 1,
+    backgroundColor: colors.PRIMARY, // or '#0f172a' for dark feel
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.PRIMARY, 
   },
-  // loaderContainer: {
-  //   ...StyleSheet.absoluteFillObject,
-  //   justifyContent: 'center',
-  //   alignItems: 'center',
-  //   backgroundColor: colors.OVERLAY,
-  //   zIndex: 1,
-  // },
+
+  loaderCard: {
+    width: 90,
+    height: 90,
+    borderRadius: 20,
+    backgroundColor: "#fff",
+    justifyContent: 'center',
+    alignItems: 'center',
+
+    // iOS shadow
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+
+    // Android shadow
+    elevation: 10,
+  },
 });
+
+
+export default RootNavigator;
