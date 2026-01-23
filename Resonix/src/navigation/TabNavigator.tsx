@@ -1,6 +1,7 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import Feather from 'react-native-vector-icons/Feather';
 
 import Home from '@views/Home';
 import Profile from '@views/Profile';
@@ -8,6 +9,24 @@ import Upload from '@views/Upload';
 import colors from '@utils/colors';
 
 const Tab = createBottomTabNavigator();
+
+type TabBarIconProps = {
+  focused: boolean;
+  color: string;
+  size: number;
+};
+
+const HomeTabIcon = ({ color, size }: TabBarIconProps) => (
+  <AntDesign name="home" color={color} size={size} />
+);
+
+const ProfileTabIcon = ({ color, size }: TabBarIconProps) => (
+  <Feather name="user" color={color} size={size} />
+);
+
+const UploadTabIcon = ({ color, size }: TabBarIconProps) => (
+  <MaterialIcons name="queue-music" color={color} size={size + 3} />
+);
 
 const TabNavigator = () => {
   return (
@@ -24,27 +43,21 @@ const TabNavigator = () => {
         name="HomeScreen"
         component={Home}
         options={{
-          tabBarIcon: ({ color, size }) => (
-            <AntDesign name="home" color={color} size={size} />
-          ),
+          tabBarIcon: HomeTabIcon,
         }}
       />
       <Tab.Screen
         name="ProfileScreen"
         component={Profile}
         options={{
-          tabBarIcon: ({ color, size }) => (
-            <AntDesign name="user" color={color} size={size} />
-          ),
+          tabBarIcon: ProfileTabIcon,
         }}
       />
       <Tab.Screen
         name="UploadScreen"
         component={Upload}
         options={{
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="account-music-outline" color={color} size={size} />
-          ),
+          tabBarIcon: UploadTabIcon,
         }}
       />
     </Tab.Navigator>

@@ -8,15 +8,17 @@ interface Props {
   onPress?: () => void;
   disabled?: boolean;
   busy?: boolean;
+  borderRadius?: number;
 }
 
-const AppButton: FC<Props> = ({ title, onPress, disabled, busy }) => {
+const AppButton: FC<Props> = ({ title, onPress, disabled, busy, borderRadius }) => {
   return (
     <Pressable
       style={({ pressed }) => [
         styles.container,
         disabled && styles.disabled,
         pressed && !disabled && styles.pressed,
+        {borderRadius: borderRadius || 23}
       ]}
       onPress={onPress}
       disabled={disabled || busy}
@@ -31,7 +33,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 45,
     backgroundColor: colors.SECONDARY,
-    borderRadius: 23,
     alignItems: 'center',
     justifyContent: 'center',
   },
