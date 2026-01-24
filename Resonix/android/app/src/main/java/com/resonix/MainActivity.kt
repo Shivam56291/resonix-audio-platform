@@ -1,5 +1,6 @@
 package com.resonix
 
+import com.zoontek.rnbootsplash.RNBootSplash
 import com.swmansion.rnscreens.fragment.restoration.RNScreensFragmentFactory
 import android.os.Bundle
 
@@ -12,6 +13,7 @@ class MainActivity : ReactActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     supportFragmentManager.fragmentFactory = RNScreensFragmentFactory()
+    RNBootSplash.init(this, R.style.BootTheme)
     super.onCreate(savedInstanceState)
   }
 
