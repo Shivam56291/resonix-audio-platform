@@ -1,5 +1,6 @@
 import { StatusBar } from 'react-native';
 import { Provider } from 'react-redux';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import colors from '@utils/colors';
 import store from 'src/store';
@@ -8,14 +9,14 @@ import AppContainer from 'src/components/AppContainer';
 
 const App = () => {
   return (
-    <>
+    <SafeAreaProvider>
+    <Provider store={store}>
       <StatusBar backgroundColor={colors.PRIMARY} barStyle="light-content" />
       <AppContainer>
-        <Provider store={store}>
-          <AppNavigator />
-        </Provider>
+        <AppNavigator />
       </AppContainer>
-    </>
+    </Provider>
+    </SafeAreaProvider>
   );
 };
 

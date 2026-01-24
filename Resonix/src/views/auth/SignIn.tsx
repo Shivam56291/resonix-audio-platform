@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import * as yup from 'yup';
 import { FormikHelpers } from 'formik';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { useDispatch } from 'react-redux';
 
 import colors from '@utils/colors';
 import AuthInputField from '@components/form/AuthInputField';
@@ -15,9 +16,10 @@ import AuthFormContainer from '@components/form/AuthFormContainer';
 import { AuthStackParamList } from 'src/@types/navigation';
 import client from 'src/api/client';
 import { updateLoggedInState, updateProfile } from 'store/auth';
-import { useDispatch } from 'react-redux';
-import { saveToAsyncStorage } from 'utils/asyncStorage';
-import { Keys } from 'utils/asyncStorage';
+import { saveToAsyncStorage } from '@utils/asyncStorage';
+import { Keys } from '@utils/asyncStorage';
+import catchAsyncError from 'src/api/catchError';
+import { updateNotification } from 'src/store/notification';
 
 interface SignInUser {
   email: string;
@@ -69,8 +71,8 @@ const SignIn: FC<Props> = () => {
       dispatch(updateProfile(response.data));
       dispatch(updateLoggedInState(true));
     } catch (error: any) {
-      console.log('STATUS:', error.response?.status);
-      console.log('DATA:', error.response?.data);
+      const errorMessage = catchAsyncError(error);
+      dispatch(updateNotification({ message: errorMessage, type: 'error' }));
     } finally {
       actions.setSubmitting(false);
     }

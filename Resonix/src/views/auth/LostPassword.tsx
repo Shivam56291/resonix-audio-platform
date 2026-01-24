@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import * as yup from 'yup';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { FormikHelpers } from 'formik';
+import { useDispatch } from 'react-redux';
 
 import colors from '@utils/colors';
 import AuthInputField from '@components/form/AuthInputField';
@@ -13,6 +14,8 @@ import AppLink from '@ui/AppLink';
 import AuthFormContainer from '@components/form/AuthFormContainer';
 import { AuthStackParamList } from 'src/@types/navigation';
 import client from 'src/api/client';
+import catchAsyncError from 'src/api/catchError';
+import { updateNotification } from 'src/store/notification';
 
 const lostPasswordSchema = yup.object({
   email: yup
@@ -37,6 +40,7 @@ const initialValues = {
 
 const LostPassword: FC<Props> = () => {
   const navigation = useNavigation<NavigationProp<AuthStackParamList>>();
+  const dispatch = useDispatch();
 
   const handleLostPasswordSubmit = async (
     values: FormValues,
@@ -44,10 +48,11 @@ const LostPassword: FC<Props> = () => {
   ) => {
     try {
       actions.setSubmitting(true);
-      await client.post('/auth/forget-password', {...values});
+      await client.post('/auth/forget-password', { ...values });
       navigation.navigate('SignIn');
     } catch (error) {
-      console.log(error);
+      const errorMessage = catchAsyncError(error);
+      dispatch(updateNotification({ message: errorMessage, type: 'error' }));
     } finally {
       actions.setSubmitting(false);
     }

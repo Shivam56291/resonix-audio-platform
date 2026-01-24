@@ -2,6 +2,7 @@ import { FC, useEffect, useRef, useState } from 'react';
 import { Keyboard, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { useDispatch } from 'react-redux';
 
 import colors from '@utils/colors';
 import AppLink from '@ui/AppLink';
@@ -11,7 +12,8 @@ import AppButton from '@ui/AppButton';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AuthStackParamList } from 'src/@types/navigation';
 import client from 'src/api/client';
-
+import catchAsyncError from 'src/api/catchError';
+import { updateNotification } from 'src/store/notification';
 
 const OTP_LENGTH = 6;
 
@@ -24,6 +26,7 @@ const Verification: FC<Props> = props => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [countDown, setCountDown] = useState(60);
   const [canSendNewOtpRequest, setCanSendNewOtpRequest] = useState(false);
+  const dispatch = useDispatch();
 
   const { userInfo } = props.route.params;
 
@@ -78,16 +81,29 @@ const Verification: FC<Props> = props => {
   });
 
   const handleOTPSubmit = async () => {
-    if (!isValidOtp) return;
+    if (!isValidOtp)
+      return dispatch(
+        updateNotification({
+          message: 'Please enter a valid OTP',
+          type: 'error',
+        }),
+      );
     try {
       setIsSubmitting(true);
       await client.post('/auth/verify-email', {
         userId: userInfo.user,
         token: otp.join(''),
       });
+      dispatch(
+        updateNotification({
+          message: 'Your email is verified successfully',
+          type: 'success',
+        }),
+      );
       navigation.navigate('SignIn');
     } catch (error) {
-      console.log(error);
+      const errorMessage = catchAsyncError(error);
+      dispatch(updateNotification({ message: errorMessage, type: 'error' }));
     } finally {
       setIsSubmitting(false);
     }
@@ -101,8 +117,15 @@ const Verification: FC<Props> = props => {
       await client.post('/auth/re-verify-email', {
         userId: userInfo.user,
       });
+      dispatch(
+        updateNotification({
+          message: 'New OTP sent successfully',
+          type: 'success',
+        }),
+      );
     } catch (error) {
-      console.log('Requestion for new otp: ', error);
+      const errorMessage = catchAsyncError(error);
+      dispatch(updateNotification({ message: errorMessage, type: 'error' }));
     } finally {
       setIsSubmitting(false);
     }

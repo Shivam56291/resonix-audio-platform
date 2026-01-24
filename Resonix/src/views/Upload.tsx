@@ -10,6 +10,7 @@ import {
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import * as DocumentPicker from '@react-native-documents/picker';
 import * as yup from 'yup';
+import { useDispatch } from 'react-redux';
 
 import colors from '@utils/colors';
 import FileSelector from '@components/FileSelector';
@@ -20,6 +21,8 @@ import client from 'src/api/client';
 import { Keys, getFromAsyncStorage } from '@utils/asyncStorage';
 import Progress from '@ui/Progress';
 import { mapRange } from '@utils/math';
+import { updateNotification } from 'src/store/notification';
+import catchAsyncError from 'src/api/catchError';
 
 interface FormFields {
   title: string;
@@ -65,6 +68,7 @@ const Upload: FC<Props> = () => {
   const [audioInfo, setAudioInfo] = useState({ ...defaultForm });
   const [uploadProgress, setUploadProgress] = useState(0);
   const [busy, setBusy] = useState(false);
+  const dispatch = useDispatch();
 
   const handleUpload = async () => {
     setBusy(true);
@@ -111,15 +115,18 @@ const Upload: FC<Props> = () => {
           setUploadProgress(Math.floor(progress));
         },
       });
+      dispatch(
+        updateNotification({
+          message: 'Audio uploaded successfully',
+          type: 'success',
+        }),
+      );
       setUploadProgress(100);
       setAudioInfo({ ...defaultForm });
       setBusy(false);
     } catch (error: any) {
-      if (error.response) {
-        console.log('Server rejected:', error.response.data);
-      } else {
-        console.log('Upload error:', error.message);
-      }
+      const errorMessage = catchAsyncError(error);
+      dispatch(updateNotification({ message: errorMessage, type: 'error' }));
       setBusy(false);
       setUploadProgress(0);
     }
@@ -153,7 +160,6 @@ const Upload: FC<Props> = () => {
               color={colors.SECONDARY}
             />
           }
-          style={{ marginLeft: 20 }}
           title="Select Audio"
           options={{
             type: [DocumentPicker.types.audio],
@@ -226,6 +232,9 @@ const styles = StyleSheet.create({
   },
   fileSelectorContainer: {
     flexDirection: 'row',
+    marginTop: 20,
+    justifyContent: 'center',
+    gap: 30,
   },
   formContainer: {
     marginTop: 20,
