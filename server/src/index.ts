@@ -14,16 +14,17 @@ import { errorHandler } from "@/middleware/errors";
 
 const app = express();
 
-app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static("src/public"));
 
-app.use("/auth", authRouter);
+app.use("/auth", express.json(), authRouter);
+app.use("/favorite", express.json(), favoriteRouter);
+app.use("/playlist", express.json(), playlistRouter);
+app.use("/profile", express.json(), profileRouter);
+app.use("/history", express.json(), historyRouter);
+
+// multipart routes (Formidable)
 app.use("/audio", audioRouter);
-app.use("/favorite", favoriteRouter);
-app.use("/playlist", playlistRouter);
-app.use("/profile", profileRouter);
-app.use("/history", historyRouter);
 app.use(errorHandler);
 
 app.listen(PORT, () => {

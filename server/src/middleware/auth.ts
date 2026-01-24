@@ -26,35 +26,47 @@ export const isValidPassResetToken: RequestHandler = async (req, res, next) => {
   next();
 };
 
-export const mustAuth: RequestHandler = async (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(403).json({ message: "Unauthorized Request" });
+export const mustAuth: RequestHandler = async (req: any, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(403).json({ message: "Unauthorized Request" });
+    }
+
+    const token = authHeader.split(" ")[1];
+
+    if (!token || token === "null" || token === "undefined") {
+      return res.status(403).json({ message: "Invalid token" });
+    }
+
+    const payload = Jwt.verify(token, JWT_SECRET) as JwtPayload;
+
+    if (!payload?.userId) {
+      return res.status(403).json({ message: "Invalid token payload" });
+    }
+
+    const user = await User.findById(payload.userId);
+    if (!user) {
+      return res.status(403).json({ message: "Unauthorized Request" });
+    }
+
+    req.user = {
+      id: user._id.toString(),
+      name: user.name,
+      email: user.email,
+      verified: user.verified,
+      avatar: user.avatar?.url,
+      followers: user.followers.length,
+      followings: user.followings.length,
+    };
+
+    req.token = token;
+    next();
+  } catch (err) {
+    console.error("JWT VERIFY ERROR:", err);
+    return res.status(401).json({ message: "Invalid or expired token" });
   }
-  const token = authHeader.split(" ")[1];
-
-  const payload = Jwt.verify(token, JWT_SECRET) as JwtPayload;
-  const id = payload.userId;
-
-  const user = await User.findOne({ _id: id, tokens: token });
-  if (!user) {
-    return res.status(403).json({
-      message: "Unauthorized Request",
-    });
-  }
-
-  req.user = {
-    id,
-    name: user.name,
-    email: user.email,
-    verified: user.verified,
-    avatar: user.avatar?.url,
-    followers: user.followers.length,
-    followings: user.followings.length,
-  };
-  req.token = token;
-
-  next();
 };
 
 export const isVerified: RequestHandler = async (req, res, next) => {
