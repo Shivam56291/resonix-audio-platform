@@ -1,38 +1,27 @@
 import { StatusBar } from 'react-native';
-import BootSplash from 'react-native-bootsplash';
-import { useEffect, useState } from 'react';
 import { Provider } from 'react-redux';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import AnimatedSplash from 'src/ui/AnimatedSplash';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient } from '@tanstack/react-query';
 
 import colors from '@utils/colors';
 import store from 'src/store';
 import AppNavigator from 'src/navigation';
 import AppContainer from 'src/components/AppContainer';
 
-const App = () => {
-  const [splashVisible, setSplashVisible] = useState(true);
+const queryClient = new QueryClient();
 
-  useEffect(() => {
-    BootSplash.hide({ fade: true });
-  }, []);
+const App = () => {
 
   return (
     <SafeAreaProvider>
       <Provider store={store}>
         <StatusBar backgroundColor={colors.PRIMARY} barStyle="light-content" />
-        {splashVisible ? (
-          <AnimatedSplash
-            onFinish={() => setSplashVisible(false)}
-            logo={require('./assets/logo.png')}
-            tagline="Turn moments into sound."
-            backgroundColor="#121212"
-          />
-        ) : (
-          <AppContainer>
-            <AppNavigator />
-          </AppContainer>
-        )}
+          <QueryClientProvider client={queryClient}>
+            <AppContainer>
+              <AppNavigator />
+            </AppContainer>
+          </QueryClientProvider>
       </Provider>
     </SafeAreaProvider>
   );

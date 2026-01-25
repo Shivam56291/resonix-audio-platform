@@ -5,7 +5,6 @@ import {
   Dimensions,
   ImageSourcePropType,
 } from 'react-native';
-import BootSplash from 'react-native-bootsplash';
 
 const { width } = Dimensions.get('window');
 
@@ -68,8 +67,6 @@ const AnimatedSplash: React.FC<AnimatedSplashProps> = ({
     ]).start(async () => {
       // Step 4: Hide native splash & finish
       await new Promise<void>(resolve => setTimeout(() => resolve(), 500));
-
-      BootSplash.hide({ fade: true });
       onFinish();
     });
   }, [logoOpacity, logoScale, taglineOpacity, bgOpacity, onFinish]);
@@ -98,6 +95,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   logo: {
     width: width * 0.4,

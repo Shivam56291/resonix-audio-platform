@@ -1,7 +1,8 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useSelector, useDispatch } from 'react-redux';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AnimatedSplash from '@ui/AnimatedSplash';
+import BootSplash from 'react-native-bootsplash';
 
 import { getAuthState } from 'src/store/auth';
 import AuthNavigator from './AuthNavigator';
@@ -33,7 +34,10 @@ const RootNavigator = () => {
     }
   };
 
-  // Render AnimatedSplash until animation + auth finishes
+    useEffect(() => {
+    BootSplash.hide({ fade: false }); // 👈 immediately
+    }, []);
+  
   if (!splashDone) {
     return (
       <AnimatedSplash

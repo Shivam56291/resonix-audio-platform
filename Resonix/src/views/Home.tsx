@@ -1,14 +1,20 @@
 import { FC } from 'react';
-import { Text, View } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+
+import LatestUploads from 'src/components/LatestUploads';
 
 interface Props {}
 
 const Home: FC<Props> = () => {
   return (
-    <View>
-      <Text>Home</Text>
+    <View style={styles.container}>
+      <LatestUploads />
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {},
+});
 
 export default Home;
