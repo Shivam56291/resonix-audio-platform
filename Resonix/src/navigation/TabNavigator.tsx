@@ -7,6 +7,7 @@ import Home from '@views/Home';
 import Profile from '@views/Profile';
 import Upload from '@views/Upload';
 import colors from '@utils/colors';
+import ScreenFadeWrapper from '@ui/ScreenFadeWrapper';
 
 const Tab = createBottomTabNavigator();
 
@@ -32,7 +33,7 @@ const TabNavigator = () => {
   return (
     <Tab.Navigator
       screenOptions={{
-        animation: 'fade',
+        animation: 'none', // let our wrapper handle animation
         headerShown: false,
         tabBarStyle: {
           backgroundColor: colors.PRIMARY,
@@ -41,27 +42,39 @@ const TabNavigator = () => {
     >
       <Tab.Screen
         name="HomeScreen"
-        component={Home}
-        options={{
-          tabBarIcon: HomeTabIcon,
-        }}
-      />
+        options={{ tabBarIcon: HomeTabIcon }}
+      >
+        {() => (
+          <ScreenFadeWrapper>
+            <Home />
+          </ScreenFadeWrapper>
+        )}
+      </Tab.Screen>
+
       <Tab.Screen
         name="ProfileScreen"
-        component={Profile}
-        options={{
-          tabBarIcon: ProfileTabIcon,
-        }}
-      />
+        options={{ tabBarIcon: ProfileTabIcon }}
+      >
+        {() => (
+          <ScreenFadeWrapper>
+            <Profile />
+          </ScreenFadeWrapper>
+        )}
+      </Tab.Screen>
+
       <Tab.Screen
         name="UploadScreen"
-        component={Upload}
-        options={{
-          tabBarIcon: UploadTabIcon,
-        }}
-      />
+        options={{ tabBarIcon: UploadTabIcon }}
+      >
+        {() => (
+          <ScreenFadeWrapper>
+            <Upload />
+          </ScreenFadeWrapper>
+        )}
+      </Tab.Screen>
     </Tab.Navigator>
   );
 };
+
 
 export default TabNavigator;
