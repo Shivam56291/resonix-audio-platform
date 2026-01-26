@@ -11,14 +11,14 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import * as DocumentPicker from '@react-native-documents/picker';
 import * as yup from 'yup';
 import { useDispatch } from 'react-redux';
+import { useQueryClient } from '@tanstack/react-query';
 
 import colors from '@utils/colors';
 import FileSelector from '@components/FileSelector';
 import AppButton from '@ui/AppButton';
 import CategorySelector from '@components/CategorySelector';
 import { categories } from '@utils/categories';
-import client from 'src/api/client';
-import { Keys, getFromAsyncStorage } from '@utils/asyncStorage';
+import { getClient } from 'src/api/client';
 import Progress from '@ui/Progress';
 import { mapRange } from '@utils/math';
 import { updateNotification } from 'src/store/notification';
@@ -70,14 +70,13 @@ const Upload: FC<Props> = () => {
   const [busy, setBusy] = useState(false);
   const dispatch = useDispatch();
 
+  const queryClient = useQueryClient();
+
   const handleUpload = async () => {
     setBusy(true);
     setUploadProgress(0);
     try {
       const data = await audioInfoSchema.validate(audioInfo);
-
-      // const normalizeUri = (uri: string) => uri;
-
       const formData = new FormData();
       formData.append('title', data.title);
       formData.append('category', data.category);
@@ -86,7 +85,7 @@ const Upload: FC<Props> = () => {
       formData.append('file', {
         name: data.file.name,
         type: data.file.type,
-        uri: data.file.uri, // ← leave it untouched
+        uri: data.file.uri,
       } as any);
 
       if (data.poster?.uri) {
@@ -97,13 +96,11 @@ const Upload: FC<Props> = () => {
         } as any);
       }
 
-      const token = await getFromAsyncStorage(Keys.AUTH_TOKEN);
+      const client = await getClient({
+        'Content-Type': 'multipart/form-data',
+      });
 
       await client.post('/audio/create', formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data',
-        },
         onUploadProgress: progressEvent => {
           const progress = mapRange({
             inputValue: progressEvent.loaded,
@@ -124,6 +121,9 @@ const Upload: FC<Props> = () => {
       setUploadProgress(100);
       setAudioInfo({ ...defaultForm });
       setBusy(false);
+
+      queryClient.invalidateQueries({ queryKey: ['latest-uploads'] });
+      queryClient.invalidateQueries({ queryKey: ['recommended'] });
     } catch (error: any) {
       const errorMessage = catchAsyncError(error);
       dispatch(updateNotification({ message: errorMessage, type: 'error' }));

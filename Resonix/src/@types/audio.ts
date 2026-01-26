@@ -1,4 +1,4 @@
-import { categoriesTypes } from "@utils/categories";
+import { categoriesTypes } from '@utils/categories';
 
 export interface AudioData {
   id: string;
@@ -11,4 +11,11 @@ export interface AudioData {
     id: string;
     name: string;
   };
+}
+
+export interface Playlist {
+  id: string;
+  title: string;
+  itemsCount: number;
+  visibility: 'public' | 'private';
 }
