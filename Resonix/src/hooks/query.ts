@@ -82,3 +82,59 @@ export const useFetchPlaylist = () => {
 
   return query;
 };
+
+// -----------------------------------------------
+
+const fetchUploadsByProfile = async (): Promise<AudioData[]> => {
+  const client = await getClient({});
+  const { data } = await client.get('/profile/uploads');
+  return data.audios;
+};
+
+export const useFetchUploadsByProfile = () => {
+  const dispatch = useDispatch();
+
+  const query = useQuery({
+    queryKey: ['uploads-by-profile'],
+    queryFn: fetchUploadsByProfile,
+    retry: 1,
+  });
+
+  useEffect(() => {
+    if (query.error) {
+      const errorMessage = catchAsyncError(query.error);
+      dispatch(updateNotification({ message: errorMessage, type: 'error' }));
+    }
+  }, [query.error, dispatch]);
+
+  return query;
+};
+
+
+// -----------------------------------------------
+
+const fetchFavorites = async (): Promise<AudioData[]> => {
+  const client = await getClient({});
+  const { data } = await client.get('/favorite');
+  return data.audios;
+};
+
+export const useFetchFavorite = () => {
+  const dispatch = useDispatch();
+
+  const query = useQuery({
+    queryKey: ['favorites'],
+    queryFn: fetchFavorites,
+    retry: 1,
+  });
+
+  useEffect(() => {
+    if (query.error) {
+      const errorMessage = catchAsyncError(query.error);
+      dispatch(updateNotification({ message: errorMessage, type: 'error' }));
+    }
+  }, [query.error, dispatch]);
+
+  return query;
+};
+

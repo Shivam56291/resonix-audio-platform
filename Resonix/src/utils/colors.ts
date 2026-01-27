@@ -16,7 +16,7 @@ ERROR = '#E74C3C',    // soft red for dark theme
 SUCCESS = '#28A745',   // soft green for dark theme
 WARNING= '#FFCC00',           // optional warning
 INFO= '#00BFFF',              // optional info
-OVERLAY= 'rgba(18, 18, 18, 0.5)', // modal overlays
+OVERLAY= 'rgba(255, 255, 255, 0.06)', // modal overlays
 GRADIENT_START= '#FFAA33',    // for premium button gradients
 GRADIENT_END= '#FF7700'
 

@@ -29,7 +29,7 @@ export const toggleFavorite: RequestHandler = async (req, res) => {
   if (alreadyExists) {
     await Favorite.updateOne(
       { owner: req.user.id },
-      { $pull: { items: audioObjectId } }
+      { $pull: { items: audioObjectId } },
     );
 
     status = "removed";
@@ -38,7 +38,7 @@ export const toggleFavorite: RequestHandler = async (req, res) => {
     if (favorite) {
       await Favorite.updateOne(
         { owner: req.user.id },
-        { $addToSet: { items: audioObjectId } }
+        { $addToSet: { items: audioObjectId } },
       );
     } else {
       await Favorite.create({ owner: req.user.id, items: [audioObjectId] });
@@ -50,7 +50,7 @@ export const toggleFavorite: RequestHandler = async (req, res) => {
   if (status === "added") {
     await User.updateOne(
       { _id: req.user.id },
-      { $addToSet: { favorites: audioObjectId } }
+      { $addToSet: { favorites: audioObjectId } },
     );
 
     await Audio.findByIdAndUpdate(audioId, {
@@ -61,7 +61,7 @@ export const toggleFavorite: RequestHandler = async (req, res) => {
   if (status === "removed") {
     await User.updateOne(
       { _id: req.user.id },
-      { $pull: { favorites: audioObjectId } }
+      { $pull: { favorites: audioObjectId } },
     );
 
     await Audio.findByIdAndUpdate(audioId, { $pull: { likes: req.user.id } });
@@ -119,7 +119,7 @@ export const getFavorites: RequestHandler = async (req, res) => {
         about: "$audioInfo.about",
         category: "$audioInfo.category",
         file: "$audioInfo.file.url",
-        poster: "$audioInfo.poster?.url",
+        poster: { $ifNull: ["$audioInfo.poster.url", null] },
         owner: { name: "$ownerInfo.name", id: "$ownerInfo._id" },
       },
     },
