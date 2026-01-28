@@ -1,34 +1,45 @@
 import { FC, useEffect, useRef, useState } from 'react';
-import { Keyboard, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Keyboard, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { useDispatch } from 'react-redux';
+import { useNavigation } from '@react-navigation/native';
 
 import colors from '@utils/colors';
-import AppLink from '@ui/AppLink';
 import AuthFormContainer from '@components/form/AuthFormContainer';
 import OTPField from '@views/auth/OTPField';
 import AppButton from '@ui/AppButton';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { AuthStackParamList } from 'src/@types/navigation';
+import {
+  NativeStackNavigationProp,
+  NativeStackScreenProps,
+} from '@react-navigation/native-stack';
+import {
+  AuthStackParamList,
+  ProfileNavigatorStackParamList,
+} from 'src/@types/navigation';
 import client from 'src/api/client';
 import catchAsyncError from 'src/api/catchError';
 import { updateNotification } from 'src/store/notification';
+import ReverificationLink from 'components/ReverificationLink';
 
 const OTP_LENGTH = 6;
 
-type Props = NativeStackScreenProps<AuthStackParamList, 'Verification'>;
+type Props = NativeStackScreenProps<
+  AuthStackParamList | ProfileNavigatorStackParamList,
+  'Verification'
+>;
+
+type VerificationNavProp = NativeStackNavigationProp<
+  AuthStackParamList & ProfileNavigatorStackParamList
+>;
 
 const Verification: FC<Props> = props => {
-  const navigation = useNavigation<NavigationProp<AuthStackParamList>>();
   const [otp, setOtp] = useState<string[]>(new Array(OTP_LENGTH).fill(''));
   const inputRefs = useRef<Array<TextInput | null>>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [countDown, setCountDown] = useState(60);
-  const [canSendNewOtpRequest, setCanSendNewOtpRequest] = useState(false);
   const dispatch = useDispatch();
+  const navigation = useNavigation<VerificationNavProp>();
 
-  const { userInfo } = props.route.params;
+  const { userInfo, redirectTo } = props.route.params;
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -100,7 +111,17 @@ const Verification: FC<Props> = props => {
           type: 'success',
         }),
       );
-      navigation.navigate('SignIn');
+
+      // const{routeNames} = navigation.getState();
+
+      // if (routeNames.includes('SignIn')) {
+      //   navigation.replace('SignIn');
+      // }
+      // if(routeNames.includes('ProfileSettings')) {
+      //   navigation.replace('ProfileSettings');
+      // }
+
+      navigation.replace(redirectTo);
     } catch (error) {
       const errorMessage = catchAsyncError(error);
       dispatch(updateNotification({ message: errorMessage, type: 'error' }));
@@ -108,44 +129,6 @@ const Verification: FC<Props> = props => {
       setIsSubmitting(false);
     }
   };
-
-  const handleResendOTP = async () => {
-    setCountDown(60);
-    setCanSendNewOtpRequest(false);
-    try {
-      setIsSubmitting(true);
-      await client.post('/auth/re-verify-email', {
-        userId: userInfo.user,
-      });
-      dispatch(
-        updateNotification({
-          message: 'New OTP sent successfully',
-          type: 'success',
-        }),
-      );
-    } catch (error) {
-      const errorMessage = catchAsyncError(error);
-      dispatch(updateNotification({ message: errorMessage, type: 'error' }));
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  useEffect(() => {
-    if (canSendNewOtpRequest) return;
-
-    const timer = setInterval(() => {
-      setCountDown(prevCount => {
-        if (prevCount <= 0) {
-          setCanSendNewOtpRequest(true);
-          clearInterval(timer);
-          return 0;
-        }
-        return prevCount - 1;
-      });
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [canSendNewOtpRequest]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -181,13 +164,9 @@ const Verification: FC<Props> = props => {
           />
 
           <View style={styles.linksContainer}>
-            {countDown > 0 && (
-              <Text style={styles.countDown}>{countDown} sec</Text>
-            )}
-            <AppLink
-              active={canSendNewOtpRequest}
-              title="Re-send OTP"
-              onPress={handleResendOTP}
+            <ReverificationLink
+              linkTitle="Re-send OTP"
+              userId={userInfo.user}
             />
           </View>
         </View>
@@ -206,7 +185,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 25,
   },
   linksContainer: {
-    flexDirection: 'row',
     justifyContent: 'flex-end',
     marginTop: 20,
     paddingHorizontal: 15,

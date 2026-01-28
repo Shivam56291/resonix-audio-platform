@@ -1,8 +1,9 @@
-import { FC } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import deepEqual from 'deep-equal';
+import ImagePicker from 'react-native-image-crop-picker';
 
 import AppHeader from '@components/AppHeader';
 import colors from '@utils/colors';
@@ -16,12 +17,29 @@ import {
   updateProfile,
   updateLoggedInState,
   updateBusyState,
+  getAuthState,
 } from '@store/auth';
+import ReverificationLink from 'components/ReverificationLink';
 
 interface Props {}
 
+interface ProfileInfo {
+  name: string;
+  avatar?: string;
+}
+
 const ProfileSettings: FC<Props> = () => {
+  const [busy, setBusy] = useState(false);
+  const [userInfo, setUserInfo] = useState<ProfileInfo>({
+    name: '',
+  });
   const dispatch = useDispatch();
+  const { profile } = useSelector(getAuthState);
+
+  const isSame = deepEqual(userInfo, {
+    name: profile?.name,
+    avatar: profile?.avatar,
+  });
 
   const handleLogout = async (fromAll?: boolean) => {
     dispatch(updateBusyState(true));
@@ -46,6 +64,84 @@ const ProfileSettings: FC<Props> = () => {
     }
   };
 
+  const handleSubmit = async () => {
+    setBusy(true);
+    if (!userInfo.name.trim()) {
+      return dispatch(
+        updateNotification({
+          message: 'Name is required',
+          type: 'error',
+        }),
+      );
+    }
+    const formData = new FormData();
+    formData.append('name', userInfo.name);
+
+    if (userInfo.avatar) {
+      formData.append('avatar', {
+        uri: userInfo.avatar,
+        type: 'image/jpeg',
+        name: 'avatar',
+      });
+    }
+
+    const client = await getClient({ 'Content-Type': 'multipart/form-data' });
+    try {
+      const { data } = await client.post('/auth/update-profile', formData);
+      dispatch(updateProfile(data.profile));
+      dispatch(
+        updateNotification({
+          message: 'Profile updated successfully',
+          type: 'success',
+        }),
+      );
+    } catch (error) {
+      const errorMessage = catchAsyncError(error);
+      dispatch(
+        updateNotification({
+          message: errorMessage,
+          type: 'error',
+        }),
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleImageSelection = async () => {
+    try {
+      const { path } = await ImagePicker.openPicker({
+        width: 300,
+        height: 300,
+        cropping: true,
+        mediaType: 'photo',
+      });
+      setUserInfo({
+        ...userInfo,
+        avatar: path,
+      });
+    } catch (error: any) {
+      if (error.code === 'E_PICKER_CANCELLED') {
+        return;
+      }
+      dispatch(
+        updateNotification({
+          message: 'Failed to pick image',
+          type: 'error',
+        }),
+      );
+    }
+  };
+
+  useEffect(() => {
+    if (profile) {
+      setUserInfo({
+        name: profile.name,
+        avatar: profile.avatar,
+      });
+    }
+  }, [profile]);
+
   return (
     <View style={styles.container}>
       <AppHeader title="Settings" />
@@ -55,8 +151,9 @@ const ProfileSettings: FC<Props> = () => {
 
       <View style={styles.settingOptionsContainer}>
         <View style={styles.avatarContainer}>
-          <AvatarField />
+          <AvatarField source={userInfo.avatar} />
           <Pressable
+            onPress={handleImageSelection}
             style={({ pressed }) => [
               styles.paddingLeft,
               pressed && styles.pressed,
@@ -68,11 +165,16 @@ const ProfileSettings: FC<Props> = () => {
         <TextInput
           style={styles.nameInput}
           placeholder="Name"
-          value="John Doe"
+          value={userInfo.name}
+          onChangeText={name => setUserInfo({ ...userInfo, name })}
         />
         <View style={styles.emailContainer}>
-          <Text style={styles.emailText}>john@email.com</Text>
-          <MaterialIcon name="verified" size={20} color={colors.SECONDARY} />
+          <Text style={styles.emailText}>{profile?.email}</Text>
+          <ReverificationLink
+            linkTitle="verify"
+            activeAtFirst={!profile?.verified}
+            isVerified={profile?.verified}
+          />
         </View>
       </View>
 
@@ -108,9 +210,16 @@ const ProfileSettings: FC<Props> = () => {
         </Pressable>
       </View>
 
-      <View style={styles.submitBtnContainer}>
-        <AppButton title="Update" borderRadius={7} />
-      </View>
+      {!isSame ? (
+        <View style={styles.submitBtnContainer}>
+          <AppButton
+            onPress={handleSubmit}
+            title="Update"
+            borderRadius={7}
+            busy={busy}
+          />
+        </View>
+      ) : null}
     </View>
   );
 };

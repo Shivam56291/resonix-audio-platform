@@ -1,16 +1,15 @@
 import { FC, useState } from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { Keyboard, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as yup from 'yup';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { FormikHelpers } from 'formik';
 import { useDispatch } from 'react-redux';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+} from 'react-native';
 
 import colors from '@utils/colors';
 import AuthInputField from '@components/form/AuthInputField';
@@ -84,7 +83,12 @@ const SignUp: FC<Props> = () => {
         ...values,
       });
       navigation.navigate('Verification', {
-        userInfo: response.data,
+        userInfo: {
+          user: response.data.user.id,
+          email: response.data.user.email,
+          name: response.data.user.name,
+        },
+        redirectTo: 'SignIn',
       });
     } catch (error) {
       const errorMessage = catchAsyncError(error);
@@ -96,82 +100,84 @@ const SignUp: FC<Props> = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 20} // adjust for header
+      <Form
+        initialValues={initialValues}
+        onSubmit={handleFormSubmit}
+        validationSchema={signUpSchema}
       >
-        <ScrollView
-          contentContainerStyle={{ flexGrow: 1, paddingBottom: 50 }}
-          keyboardShouldPersistTaps="handled"
+        <AuthFormContainer
+          heading="Welcome !"
+          subHeading="Let's get started by creating your account"
         >
-          <Form
-            initialValues={initialValues}
-            onSubmit={handleFormSubmit}
-            validationSchema={signUpSchema}
-          >
-            <AuthFormContainer
-              heading="Welcome !"
-              subHeading="Let's get started by creating your account"
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <KeyboardAvoidingView
+              style={{ flex: 1 }}
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0} // Adjust if needed
             >
-              <View style={styles.formContainer}>
-                <AuthInputField
-                  placeholder="Full name"
-                  label="Full Name"
-                  keyboardType="default"
-                  returnKeyType="next"
-                  autoCapitalize="words"
-                  secureTextEntry={false}
-                  containerStyle={styles.marginBottom}
-                  name="name"
-                />
+              <ScrollView
+                contentContainerStyle={{ flexGrow: 1, paddingBottom: 10 }}
+                keyboardShouldPersistTaps="handled"
+              >
+                <View style={styles.formContainer}>
+                  <AuthInputField
+                    placeholder="Full name"
+                    label="Full Name"
+                    keyboardType="default"
+                    returnKeyType="next"
+                    autoCapitalize="words"
+                    secureTextEntry={false}
+                    containerStyle={styles.marginBottom}
+                    name="name"
+                  />
 
-                <AuthInputField
-                  placeholder="Email address"
-                  label="Email"
-                  keyboardType="email-address"
-                  returnKeyType="next"
-                  autoCapitalize="none"
-                  secureTextEntry={false}
-                  containerStyle={styles.marginBottom}
-                  name="email"
-                />
+                  <AuthInputField
+                    placeholder="Email address"
+                    label="Email"
+                    keyboardType="email-address"
+                    returnKeyType="next"
+                    autoCapitalize="none"
+                    secureTextEntry={false}
+                    containerStyle={styles.marginBottom}
+                    name="email"
+                  />
 
-                <AuthInputField
-                  placeholder="********"
-                  label="Password"
-                  keyboardType="default"
-                  returnKeyType="done"
-                  autoCapitalize="none"
-                  secureTextEntry={secureEntry}
-                  name="password"
-                  containerStyle={styles.marginBottom}
-                  rightIcon={
-                    <PasswordVisibilityIcon
-                      privateIcon={secureEntry}
-                      onPress={togglePasswordVisibility}
+                  <AuthInputField
+                    placeholder="********"
+                    label="Password"
+                    keyboardType="default"
+                    returnKeyType="done"
+                    autoCapitalize="none"
+                    secureTextEntry={secureEntry}
+                    name="password"
+                    containerStyle={styles.marginBottom}
+                    rightIcon={
+                      <PasswordVisibilityIcon
+                        privateIcon={secureEntry}
+                        onPress={togglePasswordVisibility}
+                      />
+                    }
+                    onRightIconPress={togglePasswordVisibility}
+                  />
+                  <SubmitBtn title="Sign Up" disabled={!termsAccepted} />
+
+                  <View style={styles.linksContainer}>
+                    <TermsCheckbox
+                      onToggle={checked => setTermsAccepted(checked)}
                     />
-                  }
-                  onRightIconPress={togglePasswordVisibility}
-                />
-                <SubmitBtn title="Sign Up" disabled={!termsAccepted} />
-
-                <View style={styles.linksContainer}>
-                  <TermsCheckbox
-                    onToggle={checked => setTermsAccepted(checked)}
-                  />
-                  <AppLink
-                    title="Already have an account? Sign In"
-                    onPress={() => {
-                      navigation.navigate('SignIn');
-                    }}
-                  />
+                    <AppLink
+                      title="Already have an account? Sign In"
+                      onPress={() => {
+                        navigation.navigate('SignIn');
+                      }}
+                    />
+                  </View>
                 </View>
-              </View>
-            </AuthFormContainer>
-          </Form>
-        </ScrollView>
-      </KeyboardAvoidingView>
+              </ScrollView>
+            </KeyboardAvoidingView>
+          </TouchableWithoutFeedback>
+        </AuthFormContainer>
+      </Form>
     </SafeAreaView>
   );
 };

@@ -42,7 +42,7 @@ const TabNavigator = () => {
     >
       <Tab.Screen
         name="HomeScreen"
-        options={{ tabBarIcon: HomeTabIcon }}
+        options={{ tabBarIcon: HomeTabIcon, title: 'Home' }}
       >
         {() => (
           <ScreenFadeWrapper>
@@ -52,8 +52,11 @@ const TabNavigator = () => {
       </Tab.Screen>
 
       <Tab.Screen
-        name="ProfileNavigator"
-        options={{ tabBarIcon: ProfileTabIcon }}
+        name="ProfileScreen"
+        options={{
+          tabBarIcon: ProfileTabIcon,
+          title: 'Profile',
+        }}
       >
         {() => (
           <ScreenFadeWrapper>
@@ -64,7 +67,7 @@ const TabNavigator = () => {
 
       <Tab.Screen
         name="UploadScreen"
-        options={{ tabBarIcon: UploadTabIcon }}
+        options={{ tabBarIcon: UploadTabIcon, title: 'Upload' }}
       >
         {() => (
           <ScreenFadeWrapper>
@@ -75,6 +78,5 @@ const TabNavigator = () => {
     </Tab.Navigator>
   );
 };
-
 
 export default TabNavigator;

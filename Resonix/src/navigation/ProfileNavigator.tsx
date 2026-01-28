@@ -4,8 +4,10 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Profile from '@views/Profile';
 import ProfileSettings from '@components/profile/ProfileSettings';
 import ScreenFadeWrapper from 'ui/ScreenFadeWrapper';
+import Verification from '@views/auth/Verification';
+import { ProfileNavigatorStackParamList } from 'src/@types/navigation';
 
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<ProfileNavigatorStackParamList>();
 
 interface Props {}
 
@@ -20,7 +22,7 @@ const ProfileNavigator: FC<Props> = () => {
         gestureDirection: 'horizontal',
       }}
     >
-      <Stack.Screen name="ProfileScreen" component={Profile} />
+      <Stack.Screen name="Profile" component={Profile} />
       <Stack.Screen name="ProfileSettings">
         {() => (
           <ScreenFadeWrapper>
@@ -28,6 +30,7 @@ const ProfileNavigator: FC<Props> = () => {
           </ScreenFadeWrapper>
         )}
       </Stack.Screen>
+      <Stack.Screen name="Verification" component={Verification} />
     </Stack.Navigator>
   );
 };

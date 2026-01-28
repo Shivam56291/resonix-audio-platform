@@ -10,7 +10,7 @@ import mongoose, { isValidObjectId } from "mongoose";
 
 export const createPlaylist: RequestHandler = async (
   req: CreatePlaylistRequest,
-  res
+  res,
 ) => {
   const { title, resId, visibility } = req.body;
   const ownerId = req.user.id;
@@ -45,14 +45,14 @@ export const createPlaylist: RequestHandler = async (
 
 export const updatePlaylist: RequestHandler = async (
   req: UpdatePlaylistRequest,
-  res
+  res,
 ) => {
   const { title, item, id, visibility } = req.body;
 
   const playlist = await Playlist.findOneAndUpdate(
     { _id: id, owner: req.user.id },
     { title, visibility },
-    { new: true }
+    { new: true },
   );
 
   if (!playlist) {
@@ -70,7 +70,7 @@ export const updatePlaylist: RequestHandler = async (
 
     await playlist.populate("items");
 
-    res.status(201).json({
+    return res.status(201).json({
       playlist: {
         id: playlist._id,
         title: playlist.title,
@@ -79,7 +79,7 @@ export const updatePlaylist: RequestHandler = async (
     });
   }
 
-  res.status(201).json({
+  return res.status(201).json({
     playlist: {
       id: playlist._id,
       title: playlist.title,
@@ -112,7 +112,7 @@ export const removePlaylist: RequestHandler = async (req, res) => {
     }
     const playlist = await Playlist.findOneAndUpdate(
       { _id: playlistId, owner: req.user.id },
-      { $pull: { items: resId } }
+      { $pull: { items: resId } },
     );
 
     if (!playlist) {
