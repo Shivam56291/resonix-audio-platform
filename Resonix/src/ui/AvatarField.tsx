@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.SECONDARY,
     alignItems: 'center',
     justifyContent: 'center',
-    borderStartWidth: 4,
+    borderWidth: 4,
     borderColor: colors.CONTRAST
   },
 });

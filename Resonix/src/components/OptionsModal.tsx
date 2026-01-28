@@ -1,5 +1,5 @@
-import { ReactNode } from 'react';
-import { View } from 'react-native';
+import { ReactNode, useEffect, useRef } from 'react';
+import { View, Animated } from 'react-native';
 
 import BasicModalContainer from 'ui/BasicModalContainer';
 
@@ -16,11 +16,43 @@ const OptionsModal = <T extends any>({
   options,
   renderItem,
 }: Props<T>) => {
-  return (
+
+  const translateY = useRef(new Animated.Value(16)).current;
+  const opacity = useRef(new Animated.Value(0)).current;
+  
+  useEffect(() => {
+  if (visible) {
+    translateY.setValue(16);
+    opacity.setValue(0);
+
+    Animated.parallel([
+      Animated.timing(opacity, {
+        toValue: 1,
+        duration: 180,
+        useNativeDriver: true,
+      }),
+      Animated.timing(translateY, {
+        toValue: 0,
+        duration: 180,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }
+}, [visible,opacity,translateY]);
+
+
+return (
     <BasicModalContainer visible={visible} onRequestClose={onRequestClose}>
-      {options.map((item, index) => {
-        return <View key={index}>{renderItem(item)}</View>;
-      })}
+      <Animated.View
+        style={{
+          opacity,
+          transform: [{ translateY }],
+        }}
+      >
+        {options.map((item, index) => (
+          <View key={index}>{renderItem(item)}</View>
+        ))}
+      </Animated.View>
     </BasicModalContainer>
   );
 };

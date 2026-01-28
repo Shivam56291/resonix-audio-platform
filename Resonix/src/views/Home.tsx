@@ -10,7 +10,6 @@ import colors from 'utils/colors';
 import { AudioData, Playlist } from 'src/@types/audio';
 import { getClient } from 'api/client';
 import catchAsyncError from 'api/catchError';
-
 import { updateNotification } from 'src/store/notification';
 import PlaylistModal from 'components/PlaylistModal';
 import PlaylistForm, { PlaylistInfo } from 'components/PlaylistForm';
@@ -128,6 +127,9 @@ const Home: FC<Props> = () => {
         }}
         onAudioLongPress={handleOnLongPress}
       />
+
+      <View style={styles.sectionDivider} />
+
       <RecommendedAudio
         onAudioPress={item => {
           console.log(item);
@@ -192,6 +194,12 @@ const styles = StyleSheet.create({
     color: colors.PRIMARY,
     fontSize: 16,
     marginLeft: 7,
+  },
+  sectionDivider: {
+    height: 1,
+    backgroundColor: colors.OVERLAY,
+    marginHorizontal: 12,
+    marginVertical: 15,
   },
 });
 

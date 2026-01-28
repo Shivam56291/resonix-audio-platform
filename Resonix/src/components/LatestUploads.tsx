@@ -80,6 +80,9 @@ const styles = StyleSheet.create({
   },
   headerText: {
     color: colors.CONTRAST,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.SECONDARY,
+    letterSpacing: 0.3,
     fontWeight: 'bold',
     fontSize: 20,
     marginTop: 5,

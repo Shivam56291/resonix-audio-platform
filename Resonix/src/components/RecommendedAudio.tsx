@@ -25,7 +25,7 @@ const DummyAudioItem = () => {
 };
 
 const RecommendedAudio: FC<Props> = ({ onAudioPress, onAudioLongPress }) => {
-  const { data=[], isLoading } = useFetchRecommendedAudios();
+  const { data = [], isLoading } = useFetchRecommendedAudios();
 
   const getPoster = (poster?: string) => {
     return poster ? { uri: poster } : require('../../assets/music.png');
@@ -53,15 +53,15 @@ const RecommendedAudio: FC<Props> = ({ onAudioPress, onAudioLongPress }) => {
       <GridView
         col={3}
         data={data || []}
-        renderItem={(item) => {
+        renderItem={item => {
           return (
             <Pressable
-              onPress={() => {
-                onAudioPress(item, data);
-              }}
-              onLongPress={() => {
-                onAudioLongPress(item, data);
-              }}
+              onPress={() => onAudioPress(item, data)}
+              onLongPress={() => onAudioLongPress(item, data)}
+              style={({ pressed }) => ({
+                transform: [{ scale: pressed ? 0.96 : 1 }],
+                opacity: pressed ? 0.85 : 1,
+              })}
             >
               <Image source={getPoster(item.poster)} style={styles.poster} />
               <Text
@@ -102,10 +102,14 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     color: colors.CONTRAST,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.SECONDARY,
+    letterSpacing: 0.3,
     fontSize: 20,
     fontWeight: 'bold',
     marginLeft: 10,
     marginTop: 5,
+    alignSelf: 'flex-start',
   },
   audioTitle: {
     color: colors.CONTRAST,

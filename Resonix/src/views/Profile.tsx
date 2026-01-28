@@ -10,15 +10,14 @@ import FavoriteTab from '@components/profile/FavoriteTab';
 import HistoryTab from '@components/profile/HistoryTab';
 import colors from '@utils/colors';
 import ProfileContainer from '@components/ProfileContainer';
-
+import AnimatedTabScreenWrapper from 'ui/AnimatedTabScreenWrapper';
 
 interface Props {}
 
 const Tab = createMaterialTopTabNavigator();
 
 const Profile: FC<Props> = () => {
-
-  const {profile} = useSelector(getAuthState)
+  const { profile } = useSelector(getAuthState);
 
   return (
     <View style={styles.container}>
@@ -30,10 +29,37 @@ const Profile: FC<Props> = () => {
           tabBarIndicatorStyle: { backgroundColor: colors.SECONDARY },
         }}
       >
-        <Tab.Screen name="Uploads" component={UploadTab} />
-        <Tab.Screen name="Playlists" component={PlaylistTab} />
-        <Tab.Screen name="Favourites" component={FavoriteTab} />
-        <Tab.Screen name="History" component={HistoryTab} />
+        <Tab.Screen name="Uploads">
+          {() => (
+            <AnimatedTabScreenWrapper>
+              <UploadTab />
+            </AnimatedTabScreenWrapper>
+          )}
+        </Tab.Screen>
+
+        <Tab.Screen name="Playlists">
+          {() => (
+            <AnimatedTabScreenWrapper>
+              <PlaylistTab />
+            </AnimatedTabScreenWrapper>
+          )}
+        </Tab.Screen>
+
+        <Tab.Screen name="Favourites">
+          {() => (
+            <AnimatedTabScreenWrapper>
+              <FavoriteTab />
+            </AnimatedTabScreenWrapper>
+          )}
+        </Tab.Screen>
+
+        <Tab.Screen name="History">
+          {() => (
+            <AnimatedTabScreenWrapper>
+              <HistoryTab />
+            </AnimatedTabScreenWrapper>
+          )}
+        </Tab.Screen>
       </Tab.Navigator>
     </View>
   );

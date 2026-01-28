@@ -17,7 +17,11 @@ const AudioCard: FC<Props> = ({ title, poster, onPress, onLongPress }) => {
     <Pressable
       onPress={onPress}
       onLongPress={onLongPress}
-      style={styles.audioContainer}
+      style={({ pressed }) => ({
+        transform: [{ scale: pressed ? 0.96 : 1 }],
+        opacity: pressed ? 0.9 : 1,
+        ...styles.audioContainer,
+      })}
     >
       <Image source={source} style={styles.image} />
       <Text style={styles.title} numberOfLines={2} ellipsizeMode="tail">

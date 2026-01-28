@@ -4,10 +4,10 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Feather from 'react-native-vector-icons/Feather';
 
 import Home from '@views/Home';
-import Profile from '@views/Profile';
 import Upload from '@views/Upload';
 import colors from '@utils/colors';
 import ScreenFadeWrapper from '@ui/ScreenFadeWrapper';
+import ProfileNavigator from './ProfileNavigator';
 
 const Tab = createBottomTabNavigator();
 
@@ -52,12 +52,12 @@ const TabNavigator = () => {
       </Tab.Screen>
 
       <Tab.Screen
-        name="ProfileScreen"
+        name="ProfileNavigator"
         options={{ tabBarIcon: ProfileTabIcon }}
       >
         {() => (
           <ScreenFadeWrapper>
-            <Profile />
+            <ProfileNavigator />
           </ScreenFadeWrapper>
         )}
       </Tab.Screen>
