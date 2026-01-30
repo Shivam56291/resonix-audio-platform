@@ -48,7 +48,7 @@ const RecommendedAudio: FC<Props> = ({ onAudioPress, onAudioLongPress }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.headerTitle}>Recommended Audio</Text>
+      <Text style={styles.headerTitle}>You May Also Like</Text>
 
       <GridView
         col={3}

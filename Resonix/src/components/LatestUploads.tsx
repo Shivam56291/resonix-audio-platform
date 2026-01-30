@@ -6,6 +6,8 @@ import colors from 'src/utils/colors';
 import AudioCard from 'src/ui/AudioCard';
 import PulseAnimationContainer from 'src/ui/PulseAnimationContainer';
 import { AudioData } from 'src/@types/audio';
+import { useSelector } from 'react-redux';
+import { getPlayerState } from 'src/store/player';
 
 interface Props {
   onAudioPress: (audio: AudioData, data: AudioData[]) => void;
@@ -16,6 +18,7 @@ const dummyData = new Array(4).fill('');
 
 const LatestUploads: FC<Props> = ({ onAudioPress, onAudioLongPress }) => {
   const { data, isLoading } = useFetchLatestAudios();
+  const { onGoingAudio } = useSelector(getPlayerState);
 
   if (isLoading) {
     return (
@@ -44,7 +47,8 @@ const LatestUploads: FC<Props> = ({ onAudioPress, onAudioLongPress }) => {
             title={audio.title}
             poster={audio.poster}
             onPress={() => {onAudioPress(audio, data)}}
-            onLongPress={() => {onAudioLongPress(audio, data)}}
+            onLongPress={() => { onAudioLongPress(audio, data) }}
+            playing={onGoingAudio?.id === audio.id}
           />
         ))}
       </ScrollView>

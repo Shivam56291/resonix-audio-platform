@@ -8,10 +8,13 @@ import colors from '@utils/colors';
 import store from 'src/store';
 import AppNavigator from 'src/navigation';
 import AppContainer from 'src/components/AppContainer';
+import { useSetupTrackPlayer } from 'src/hooks/useAudioController';
 
 const queryClient = new QueryClient();
 
 const App = () => {
+
+  useSetupTrackPlayer();
 
   return (
     <SafeAreaProvider>

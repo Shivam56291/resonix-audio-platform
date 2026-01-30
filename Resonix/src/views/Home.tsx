@@ -14,6 +14,7 @@ import { updateNotification } from 'src/store/notification';
 import PlaylistModal from 'components/PlaylistModal';
 import PlaylistForm, { PlaylistInfo } from 'components/PlaylistForm';
 import { useFetchPlaylist } from 'hooks/query';
+import useAudioController from 'hooks/useAudioController';
 
 interface Props {}
 
@@ -22,6 +23,7 @@ const Home: FC<Props> = () => {
   const [selectedAudio, setSelectedAudio] = useState<AudioData | null>(null);
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
   const [showPlaylistForm, setShowPlaylistForm] = useState(false);
+  const { onAudioPress } = useAudioController();
 
   const { data: playlistData } = useFetchPlaylist();
 
@@ -122,18 +124,14 @@ const Home: FC<Props> = () => {
   return (
     <View style={styles.container}>
       <LatestUploads
-        onAudioPress={item => {
-          console.log(item);
-        }}
+        onAudioPress={onAudioPress}
         onAudioLongPress={handleOnLongPress}
       />
 
       <View style={styles.sectionDivider} />
 
       <RecommendedAudio
-        onAudioPress={item => {
-          console.log(item);
-        }}
+        onAudioPress={onAudioPress}
         onAudioLongPress={handleOnLongPress}
       />
       <OptionsModal

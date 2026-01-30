@@ -2,11 +2,13 @@ import { configureStore } from '@reduxjs/toolkit';
 
 import authReducer from 'src/store/auth';
 import notificationReducer from 'src/store/notification';
+import playerReducer from 'src/store/player';
 
 const store = configureStore({
   reducer: {
     auth: authReducer,
     notification: notificationReducer,
+    player: playerReducer,
   },
 });
 

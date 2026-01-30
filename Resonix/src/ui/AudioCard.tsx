@@ -1,17 +1,21 @@
 import { FC } from 'react';
-import { Image, Pressable, StyleSheet, Text } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import colors from 'src/utils/colors';
+import PlayAnimation from './PlayAnimation';
 
 interface Props {
   title: string;
   poster?: string;
   onPress?: () => void;
   onLongPress?: () => void;
+  playing?: boolean;
 }
 
-const AudioCard: FC<Props> = ({ title, poster, onPress, onLongPress }) => {
+const AudioCard: FC<Props> = ({ title, poster, onPress, onLongPress, playing = false }) => {
   const source = poster ? { uri: poster } : require('../../assets/music.png');
+
+  console.log(playing)
 
   return (
     <Pressable
@@ -23,7 +27,10 @@ const AudioCard: FC<Props> = ({ title, poster, onPress, onLongPress }) => {
         ...styles.audioContainer,
       })}
     >
-      <Image source={source} style={styles.image} />
+      <View>
+        <Image source={source} style={styles.image} />
+        <PlayAnimation visible={playing} />
+      </View>
       <Text style={styles.title} numberOfLines={2} ellipsizeMode="tail">
         {title}
       </Text>
