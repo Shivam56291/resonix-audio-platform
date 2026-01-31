@@ -1,42 +1,74 @@
-import colors from '@utils/colors';
-import {FC, useEffect} from 'react';
-import { StyleSheet} from 'react-native';
+import { FC, useEffect } from 'react';
+import { StyleSheet } from 'react-native';
 import Animated, {
-  useAnimatedStyle,
   useSharedValue,
-  withDelay,
+  useAnimatedStyle,
   withRepeat,
   withTiming,
+  withDelay,
+  Easing,
 } from 'react-native-reanimated';
+import LinearGradient from 'react-native-linear-gradient';
+
+import colors from 'utils/colors';
+
+const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
 
 interface Props {
   delay: number;
   height: number;
 }
 
-const AnimatedStroke: FC<Props> = ({delay, height}) => {
-  const sharedValue = useSharedValue(height/2);
+const AnimatedStroke: FC<Props> = ({ delay, height }) => {
+  const sharedHeight = useSharedValue(height / 2);
+  const sharedOpacity = useSharedValue(0.7);
 
-  const heightStyle = useAnimatedStyle(() => ({
-    height: sharedValue.value,
+  const animatedStyle = useAnimatedStyle(() => ({
+    height: sharedHeight.value,
+    opacity: sharedOpacity.value,
   }));
 
   useEffect(() => {
-    sharedValue.value = withDelay(
+    sharedHeight.value = withDelay(
       delay,
-      withRepeat(withTiming(height, {duration: 400}), -1, true),
+      withRepeat(
+        withTiming(height, {
+          duration: 500,
+          easing: Easing.inOut(Easing.quad),
+        }),
+        -1,
+        true,
+      ),
     );
-  }, [delay, height, sharedValue]);
 
-  return <Animated.View style={[styles.stroke, heightStyle]} />;
+    sharedOpacity.value = withDelay(
+      delay,
+      withRepeat(
+        withTiming(1, { duration: 800, easing: Easing.inOut(Easing.quad) }),
+        -1,
+        true,
+      ),
+    );
+  }, [delay, height, sharedHeight, sharedOpacity]);
+
+  return (
+    <AnimatedLinearGradient
+      colors={[colors.SECONDARY + 'dd', colors.SECONDARY + '66']}
+      style={[styles.stroke, animatedStyle]}
+    />
+  );
 };
 
 const styles = StyleSheet.create({
   stroke: {
     width: 4,
-    backgroundColor: colors.CONTRAST,
-    marginRight: 5,
-    borderRadius: 1.5,
+    marginHorizontal: 2,
+    borderRadius: 2,
+    shadowColor: colors.SECONDARY + 'aa',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.4,
+    shadowRadius: 4,
+    elevation: 2,
   },
 });
 

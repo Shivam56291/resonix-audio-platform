@@ -1,5 +1,13 @@
 import { FC } from 'react';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  Image,
+  Pressable,
+  StyleProp,
+  StyleSheet,
+  Text,
+  View,
+  ViewStyle,
+} from 'react-native';
 
 import colors from 'src/utils/colors';
 import PlayAnimation from './PlayAnimation';
@@ -10,27 +18,38 @@ interface Props {
   onPress?: () => void;
   onLongPress?: () => void;
   playing?: boolean;
+  containerStyle?: StyleProp<ViewStyle>;
 }
 
-const AudioCard: FC<Props> = ({ title, poster, onPress, onLongPress, playing = false }) => {
+const AudioCard: FC<Props> = ({
+  title,
+  poster,
+  onPress,
+  onLongPress,
+  playing = false,
+  containerStyle,
+}) => {
   const source = poster ? { uri: poster } : require('../../assets/music.png');
-
-  console.log(playing)
 
   return (
     <Pressable
       onPress={onPress}
       onLongPress={onLongPress}
-      style={({ pressed }) => ({
-        transform: [{ scale: pressed ? 0.96 : 1 }],
-        opacity: pressed ? 0.9 : 1,
-        ...styles.audioContainer,
-      })}
+      style={({ pressed }) => [
+        containerStyle ? containerStyle : styles.audioContainer,
+        pressed && { transform: [{ scale: 0.96 }], opacity: 0.9 },
+      ]}
     >
       <View>
         <Image source={source} style={styles.image} />
-        <PlayAnimation visible={playing} />
+
+        {playing && (
+          <View style={styles.overlayContainer}>
+            <PlayAnimation visible={playing} />
+          </View>
+        )}
       </View>
+
       <Text style={styles.title} numberOfLines={2} ellipsizeMode="tail">
         {title}
       </Text>
@@ -47,12 +66,19 @@ const styles = StyleSheet.create({
   },
   image: {
     aspectRatio: 1,
-    height: 100,
+    width: '100%',
     borderRadius: 7,
   },
   audioContainer: {
     width: 100,
-    marginHorizontal: 12,
+    marginHorizontal: 6,
+  },
+  overlayContainer: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: 'rgba(0,0,0,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 7,
   },
 });
 

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import TrackPlayer, {
   Track,
   usePlaybackState,
@@ -6,23 +6,22 @@ import TrackPlayer, {
 } from 'react-native-track-player';
 import { useSelector, useDispatch } from 'react-redux';
 
-import { getPlayerState, updateOnGoingAudio } from 'src/store/player';
+import {
+  getPlayerState,
+  updateOnGoingAudio,
+  updateOnGoingList,
+} from 'src/store/player';
 import { AudioData } from 'src/@types/audio';
+import deepEqual from 'deep-equal';
+
+import { setupTrackPlayer } from '@utils/audioPlayer';
 
 export const useSetupTrackPlayer = () => {
-  const isPlayerSetup = useRef(false);
-
   useEffect(() => {
-    const initPlayer = async () => {
-      if (!isPlayerSetup.current) {
-        await TrackPlayer.setupPlayer();
-        isPlayerSetup.current = true;
-      }
-    };
-
-    initPlayer();
+    setupTrackPlayer();
   }, []);
 };
+
 
 const updateQueue = async (data: AudioData[]) => {
   const lists: Track[] = data.map(audio => ({
@@ -39,10 +38,10 @@ const updateQueue = async (data: AudioData[]) => {
 
 const useAudioController = () => {
   const { state: playbackState } = usePlaybackState() as { state?: State };
-  const { onGoingAudio } = useSelector(getPlayerState);
+  const { onGoingAudio, onGoingList } = useSelector(getPlayerState);
   const dispatch = useDispatch();
 
-  const isPlayerReady = playbackState !== State.None;
+  const isPlayerReady = playbackState && playbackState !== State.None;
 
   const onAudioPress = async (item: AudioData, data: AudioData[]) => {
     if (!isPlayerReady) {
@@ -51,14 +50,31 @@ const useAudioController = () => {
       await TrackPlayer.skip(index);
       await TrackPlayer.play();
       dispatch(updateOnGoingAudio(item));
+      return dispatch(updateOnGoingList(data));
     }
 
     if (playbackState === State.Playing && onGoingAudio?.id === item.id) {
-      await TrackPlayer.pause();
+      return await TrackPlayer.pause();
     }
 
     if (playbackState === State.Paused && onGoingAudio?.id === item.id) {
+      return await TrackPlayer.play();
+    }
+
+    if (onGoingAudio?.id !== item.id) {
+      const fromSameList = deepEqual(onGoingList, data);
+
+      await TrackPlayer.pause();
+      const index = data.findIndex(audio => audio.id === item.id);
+
+      if (!fromSameList) {
+        await TrackPlayer.reset();
+        await updateQueue(data);
+        dispatch(updateOnGoingList(data));
+      }
+      await TrackPlayer.skip(index);
       await TrackPlayer.play();
+      dispatch(updateOnGoingAudio(item));
     }
   };
 
