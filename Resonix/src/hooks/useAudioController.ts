@@ -22,7 +22,6 @@ export const useSetupTrackPlayer = () => {
   }, []);
 };
 
-
 const updateQueue = async (data: AudioData[]) => {
   const lists: Track[] = data.map(audio => ({
     id: audio.id,
@@ -42,6 +41,9 @@ const useAudioController = () => {
   const dispatch = useDispatch();
 
   const isPlayerReady = playbackState && playbackState !== State.None;
+  const isPlaying = playbackState === State.Playing;
+  const isPaused = playbackState === State.Paused;
+  const isBusy = playbackState === State.Buffering || playbackState === State.Loading;
 
   const onAudioPress = async (item: AudioData, data: AudioData[]) => {
     if (!isPlayerReady) {
@@ -78,8 +80,21 @@ const useAudioController = () => {
     }
   };
 
+  const togglePlayPause = async () => {
+    if (isPlaying) {
+      await TrackPlayer.pause();
+    }
+    if (isPaused) {
+      await TrackPlayer.play();
+    }
+  };
+
   return {
     onAudioPress,
+    isPlayerReady,
+    isPlaying,
+    togglePlayPause,
+    isBusy,
   };
 };
 

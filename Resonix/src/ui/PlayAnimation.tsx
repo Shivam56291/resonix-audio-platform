@@ -12,7 +12,6 @@ const PlayAnimation: FC<Props> = ({ visible }) => {
 
   return (
     <View style={styles.container}>
-      {/* Optional subtle background overlay */}
       <LinearGradient
         colors={['rgba(0,0,0,0.0)', 'rgba(0,0,0,0.1)']}
         style={StyleSheet.absoluteFill}

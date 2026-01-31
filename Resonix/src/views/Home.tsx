@@ -1,5 +1,12 @@
 import { FC, useState } from 'react';
-import { View, StyleSheet, Text, Pressable } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Text,
+  Pressable,
+  ScrollView,
+  Button,
+} from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useDispatch } from 'react-redux';
 
@@ -15,6 +22,8 @@ import PlaylistModal from 'components/PlaylistModal';
 import PlaylistForm, { PlaylistInfo } from 'components/PlaylistForm';
 import { useFetchPlaylist } from 'hooks/query';
 import useAudioController from 'hooks/useAudioController';
+import AppView from '@components/AppView';
+import AppModal from '@ui/AppModal';
 
 interface Props {}
 
@@ -23,6 +32,7 @@ const Home: FC<Props> = () => {
   const [selectedAudio, setSelectedAudio] = useState<AudioData | null>(null);
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
   const [showPlaylistForm, setShowPlaylistForm] = useState(false);
+  const [show, setShow] = useState(false);
   const { onAudioPress } = useAudioController();
 
   const { data: playlistData } = useFetchPlaylist();
@@ -122,62 +132,68 @@ const Home: FC<Props> = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <LatestUploads
-        onAudioPress={onAudioPress}
-        onAudioLongPress={handleOnLongPress}
-      />
+    <AppView>
+      <ScrollView contentContainerStyle={styles.container}>
+        <LatestUploads
+          onAudioPress={onAudioPress}
+          onAudioLongPress={handleOnLongPress}
+        />
 
-      <View style={styles.sectionDivider} />
+        <View style={styles.sectionDivider} />
 
-      <RecommendedAudio
-        onAudioPress={onAudioPress}
-        onAudioLongPress={handleOnLongPress}
-      />
-      <OptionsModal
-        visible={showOptions}
-        onRequestClose={() => setShowOptions(false)}
-        options={[
-          {
-            title: 'Add to Playlist',
-            icon: 'playlist-music', // 'playlist-plus
-            onPress: handleAddToPlaylist,
-          },
-          {
-            title: 'Add to Favourites',
-            icon: 'cards-heart', // 'heart-plus'
-            onPress: handleOnFavPress,
-          },
-        ]}
-        renderItem={item => (
-          <Pressable style={styles.optionContainer} onPress={item.onPress}>
-            <MaterialCommunityIcons
-              name={item.icon}
-              size={24}
-              color={colors.PRIMARY}
-            />
-            <Text style={styles.optionLabel}>{item.title}</Text>
-          </Pressable>
-        )}
-      />
+        <RecommendedAudio
+          onAudioPress={onAudioPress}
+          onAudioLongPress={handleOnLongPress}
+        />
+        <OptionsModal
+          visible={showOptions}
+          onRequestClose={() => setShowOptions(false)}
+          options={[
+            {
+              title: 'Add to Playlist',
+              icon: 'playlist-music', // 'playlist-plus
+              onPress: handleAddToPlaylist,
+            },
+            {
+              title: 'Add to Favourites',
+              icon: 'cards-heart', // 'heart-plus'
+              onPress: handleOnFavPress,
+            },
+          ]}
+          renderItem={item => (
+            <Pressable style={styles.optionContainer} onPress={item.onPress}>
+              <MaterialCommunityIcons
+                name={item.icon}
+                size={24}
+                color={colors.PRIMARY}
+              />
+              <Text style={styles.optionLabel}>{item.title}</Text>
+            </Pressable>
+          )}
+        />
 
-      <PlaylistModal
-        visible={showPlaylistModal}
-        onRequestClose={() => setShowPlaylistModal(false)}
-        list={playlistData || []}
-        onCreateNewPress={() => {
-          setShowPlaylistModal(false);
-          setShowPlaylistForm(true);
-        }}
-        onPlaylistPress={updatePlaylist}
-      />
+        <PlaylistModal
+          visible={showPlaylistModal}
+          onRequestClose={() => setShowPlaylistModal(false)}
+          list={playlistData || []}
+          onCreateNewPress={() => {
+            setShowPlaylistModal(false);
+            setShowPlaylistForm(true);
+          }}
+          onPlaylistPress={updatePlaylist}
+        />
 
-      <PlaylistForm
-        visible={showPlaylistForm}
-        onRequestClose={() => setShowPlaylistForm(false)}
-        onSubmit={handlePlaylistSubmit}
-      />
-    </View>
+        <PlaylistForm
+          visible={showPlaylistForm}
+          onRequestClose={() => setShowPlaylistForm(false)}
+          onSubmit={handlePlaylistSubmit}
+        />
+        <Button title="Open" onPress={() => setShow(true)} />
+      </ScrollView>
+      <AppModal animation visible={show} onRequestClose={() => setShow(false)}>
+        <View />
+      </AppModal>
+    </AppView>
   );
 };
 
