@@ -89,12 +89,17 @@ const useAudioController = () => {
     }
   };
 
+  const seekTo = async (position: number) => {
+    await TrackPlayer.seekTo(position);
+  };
+
   return {
     onAudioPress,
     isPlayerReady,
     isPlaying,
     togglePlayPause,
     isBusy,
+    seekTo,
   };
 };
 

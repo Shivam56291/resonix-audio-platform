@@ -5,7 +5,6 @@ import {
   Text,
   Pressable,
   ScrollView,
-  Button,
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useDispatch } from 'react-redux';
@@ -23,7 +22,6 @@ import PlaylistForm, { PlaylistInfo } from 'components/PlaylistForm';
 import { useFetchPlaylist } from 'hooks/query';
 import useAudioController from 'hooks/useAudioController';
 import AppView from '@components/AppView';
-import AppModal from '@ui/AppModal';
 
 interface Props {}
 
@@ -32,7 +30,6 @@ const Home: FC<Props> = () => {
   const [selectedAudio, setSelectedAudio] = useState<AudioData | null>(null);
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
   const [showPlaylistForm, setShowPlaylistForm] = useState(false);
-  const [show, setShow] = useState(false);
   const { onAudioPress } = useAudioController();
 
   const { data: playlistData } = useFetchPlaylist();
@@ -188,11 +185,7 @@ const Home: FC<Props> = () => {
           onRequestClose={() => setShowPlaylistForm(false)}
           onSubmit={handlePlaylistSubmit}
         />
-        <Button title="Open" onPress={() => setShow(true)} />
       </ScrollView>
-      <AppModal animation visible={show} onRequestClose={() => setShow(false)}>
-        <View />
-      </AppModal>
     </AppView>
   );
 };

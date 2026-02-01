@@ -14,7 +14,11 @@ const AppView: FC<Props> = ({ children }) => {
   return (
     <View style={styles.container}>
       <View style={styles.children}>{children}</View>
-      {isPlayerReady && <MiniAudiPlayer />}
+      {isPlayerReady && (
+        <View style={styles.miniPlayerWrapper}>
+          <MiniAudiPlayer />
+        </View>
+      )}
     </View>
   );
 };
@@ -25,6 +29,12 @@ const styles = StyleSheet.create({
   },
   children: {
     flex: 1,
+  },
+  miniPlayerWrapper: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
 });
 
