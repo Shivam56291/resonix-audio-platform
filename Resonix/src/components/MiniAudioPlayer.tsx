@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useRef, useState } from 'react';
+import { FC, useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSelector } from 'react-redux';
 import { getPlayerState } from 'store/player';
@@ -9,6 +9,8 @@ import Animated, {
   withRepeat,
   withSpring,
   withTiming,
+  withDelay,
+  withSequence,
 } from 'react-native-reanimated';
 import LinearGradient from 'react-native-linear-gradient';
 import { useProgress } from 'react-native-track-player';
@@ -22,37 +24,49 @@ import AudioPlayer from './AudioPlayer';
 
 interface Props {}
 
-const MINI_SPRING = {
-  damping: 22,
-  stiffness: 260,
-  mass: 0.55,
-};
-
 export const MiniPlayerHeight = 60;
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 const MiniAudiPlayer: FC<Props> = () => {
   const { onGoingAudio } = useSelector(getPlayerState);
   const { isPlaying, togglePlayPause, isBusy } = useAudioController();
   const progress = useProgress();
   const [playerVisibility, setPlayerVisibility] = useState(false);
+  const [displayedAudio, setDisplayedAudio] = useState(onGoingAudio);
 
   const translateY = useSharedValue(0);
   const opacity = useSharedValue(1);
   const scale = useSharedValue(1);
   const progressOpacity = useSharedValue(1);
+  const posterScale = useSharedValue(1);
+  const textOpacity = useSharedValue(1);
+  const textTranslateY = useSharedValue(0);
 
   const miniPlayerStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }, { scale: scale.value }],
     opacity: opacity.value,
   }));
 
+  const fadeAnim = useSharedValue(1);
+  const isPlayingSV = useSharedValue(isPlaying);
+
+  useEffect(() => {
+    isPlayingSV.value = isPlaying;
+  }, [isPlaying, isPlayingSV]);
+
   const rotation = useSharedValue(0);
+
   const posterAnimatedStyle = useAnimatedStyle(() => ({
     transform: [
-      { rotate: rotation.value + 'deg' },
-      { scale: isPlaying ? 1.05 : 1 },
+      { rotate: `${rotation.value}deg` },
+      { scale: posterScale.value },
     ],
     opacity: fadeAnim.value,
+  }));
+  const textAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: textOpacity.value,
+    transform: [{ translateY: textTranslateY.value }],
   }));
 
   const progressStyle = useAnimatedStyle(() => ({
@@ -64,65 +78,102 @@ const MiniAudiPlayer: FC<Props> = () => {
     setPlayerVisibility(false);
 
     // animate mini player back
-    scale.value = withSpring(1, { damping: 26 });
-    opacity.value = withSpring(1, { damping: 26 });
-    translateY.value = withSpring(0, MINI_SPRING);
-    progressOpacity.value = withSpring(1, { damping: 30 });
+    opacity.value = withTiming(1, { duration: 220 });
+
+    // ⬇️ tiny delay ONLY on scale
+    scale.value = withDelay(40, withTiming(1, { duration: 260 }));
+
+    translateY.value = withTiming(0, { duration: 280 });
+    progressOpacity.value = withTiming(1, { duration: 220 });
   }, [opacity, progressOpacity, scale, translateY]);
 
   const showPlayerModal = () => {
-    progressOpacity.value = withTiming(0, { duration: 200 });
-    scale.value = withSpring(0.97, { damping: 26 });
-    translateY.value = withSpring(MiniPlayerHeight + 20, MINI_SPRING);
-    opacity.value = withSpring(0.95);
+    progressOpacity.value = withTiming(0, { duration: 180 });
+
+    scale.value = withTiming(0.92, { duration: 180 });
+    opacity.value = withTiming(0, { duration: 160 });
+    translateY.value = withTiming(MiniPlayerHeight + 24, { duration: 220 });
+
     setPlayerVisibility(true);
   };
 
-  const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
-
   useEffect(() => {
-    let animation: any;
-
-    const startRotation = () => {
-      animation = withRepeat(
-        withTiming(rotation.value + 360, { duration: 8300 }),
+    if (isPlaying) {
+      rotation.value = withRepeat(
+        withTiming(360, { duration: 8300 }),
         -1,
         false,
       );
-      rotation.value = animation;
-    };
-
-    if (isPlaying) {
-      startRotation();
     } else {
-      rotation.value = rotation.value;
+      rotation.value = withTiming(rotation.value % 360, { duration: 300 });
     }
   }, [isPlaying, onGoingAudio?.id, rotation]);
 
-  const previousAudioId = useRef<string | undefined>(onGoingAudio?.id);
-  const fadeAnim = useSharedValue(1);
+  const onModalClosed = useCallback(() => {
+    closePlayerModal(); // animate mini player back AFTER modal closes
+  }, [closePlayerModal]);
 
   useEffect(() => {
-    if (onGoingAudio?.id !== previousAudioId.current) {
-      // fade out
-      fadeAnim.value = withTiming(0, { duration: 200 }, () => {
-        previousAudioId.current = onGoingAudio?.id;
-        fadeAnim.value = withTiming(1, { duration: 200 });
-      });
-    }
-  }, [onGoingAudio?.id, fadeAnim]);
+    if (!onGoingAudio) return;
+    if (onGoingAudio.id === displayedAudio?.id) return;
 
-  const source = onGoingAudio?.poster
-    ? { uri: onGoingAudio?.poster }
+    // 1️⃣ Animate OUT old content
+    fadeAnim.value = withTiming(0, { duration: 140 });
+    posterScale.value = withTiming(0.96, { duration: 140 });
+
+    textOpacity.value = withTiming(0, { duration: 120 });
+    textTranslateY.value = withTiming(6, { duration: 120 });
+
+    // 2️⃣ AFTER fade-out, swap content
+    const timeout = setTimeout(() => {
+      setDisplayedAudio(onGoingAudio);
+
+      // 3️⃣ Animate IN new content
+      fadeAnim.value = withTiming(1, { duration: 220 });
+      posterScale.value = withSpring(1, { damping: 26 });
+
+      textTranslateY.value = -6;
+      textOpacity.value = 0;
+
+      textOpacity.value = withTiming(1, { duration: 180 });
+      textTranslateY.value = withTiming(0, { duration: 180 });
+
+      // 4️⃣ Micro pulse
+      scale.value = withSequence(
+        withTiming(0.98, { duration: 90 }),
+        withSpring(1, { damping: 24 }),
+      );
+    }, 140);
+
+    return () => clearTimeout(timeout);
+  }, [
+    onGoingAudio,
+    displayedAudio?.id,
+    fadeAnim,
+    posterScale,
+    scale,
+    textOpacity,
+    textTranslateY,
+  ]);
+
+  const source = displayedAudio?.poster
+    ? { uri: displayedAudio.poster }
     : require('../../assets/music.png');
 
-  const progressWidth = mapRange({
-    inputMin: 0,
-    inputMax: progress.duration,
-    inputValue: progress.position,
-    outputMin: 0,
-    outputMax: 100,
-  });
+  const progressWidth =
+    progress.duration > 0
+      ? mapRange({
+          inputMin: 0,
+          inputMax: progress.duration,
+          inputValue: progress.position,
+          outputMin: 0,
+          outputMax: 100,
+        })
+      : 0;
+
+  useEffect(() => {
+    rotation.value = 0;
+  }, [onGoingAudio?.id, rotation]);
 
   return (
     <>
@@ -155,20 +206,26 @@ const MiniAudiPlayer: FC<Props> = () => {
 
         <AnimatedPressable
           style={styles.contentContainer}
+          onPress={showPlayerModal}
           onPressIn={() => {
-            scale.value = withSpring(0.97, { damping: 30 });
+            if (!playerVisibility) {
+              scale.value = withSpring(0.97, { damping: 30 });
+            }
           }}
           onPressOut={() => {
-            scale.value = withSpring(1, { damping: 30 });
+            if (!playerVisibility) {
+              scale.value = withSpring(1, { damping: 30 });
+            }
           }}
-          onPress={showPlayerModal}
         >
-          <Text numberOfLines={1} ellipsizeMode="tail" style={styles.title}>
-            {onGoingAudio?.title || 'Unknown Title'}
-          </Text>
-          <Text numberOfLines={1} ellipsizeMode="tail" style={styles.name}>
-            {onGoingAudio?.owner.name || 'Unknown Artist'}
-          </Text>
+          <Animated.View style={textAnimatedStyle}>
+            <Text numberOfLines={1} ellipsizeMode="tail" style={styles.title}>
+              {displayedAudio?.title || 'Unknown Title'}
+            </Text>
+            <Text numberOfLines={1} ellipsizeMode="tail" style={styles.name}>
+              {displayedAudio?.owner.name || 'Unknown Artist'}
+            </Text>
+          </Animated.View>
         </AnimatedPressable>
 
         <Pressable style={styles.iconButton}>
@@ -184,14 +241,11 @@ const MiniAudiPlayer: FC<Props> = () => {
             <Loader size={24} color={colors.CONTRAST} />
           </View>
         ) : (
-          <PlayPauseBtn playing={isPlaying} onPress={togglePlayPause} />
+          <PlayPauseBtn playing={isPlaying} onPress={togglePlayPause} color={colors.CONTRAST} bgColor={colors.PRIMARY} />
         )}
       </Animated.View>
 
-      <AudioPlayer
-        visible={playerVisibility}
-        onRequestClose={closePlayerModal}
-      />
+      <AudioPlayer visible={playerVisibility} onCloseComplete={onModalClosed} />
     </>
   );
 };

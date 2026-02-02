@@ -43,7 +43,8 @@ const useAudioController = () => {
   const isPlayerReady = playbackState && playbackState !== State.None;
   const isPlaying = playbackState === State.Playing;
   const isPaused = playbackState === State.Paused;
-  const isBusy = playbackState === State.Buffering || playbackState === State.Loading;
+  const isBusy =
+    playbackState === State.Buffering || playbackState === State.Loading;
 
   const onAudioPress = async (item: AudioData, data: AudioData[]) => {
     if (!isPlayerReady) {
@@ -93,6 +94,36 @@ const useAudioController = () => {
     await TrackPlayer.seekTo(position);
   };
 
+  const skipTo = async (seconds: number) => {
+    const { position, duration } = await TrackPlayer.getProgress();
+    const newPosition = Math.min(Math.max(position + seconds, 0), duration);
+
+    await TrackPlayer.seekTo(newPosition);
+
+    const playback = await TrackPlayer.getPlaybackState();
+
+    if (playback.state !== State.Playing) {
+      setTimeout(() => {
+        TrackPlayer.play();
+      }, 150);
+    }
+  };
+
+  const skipBack = async (seconds: number) => {
+    const { position } = await TrackPlayer.getProgress();
+    const newPosition = Math.max(position - seconds, 0);
+
+    await TrackPlayer.seekTo(newPosition);
+
+    const playback = await TrackPlayer.getPlaybackState();
+
+    if (playback.state !== State.Playing) {
+      setTimeout(() => {
+        TrackPlayer.play();
+      }, 150);
+    }
+  };
+
   return {
     onAudioPress,
     isPlayerReady,
@@ -100,6 +131,8 @@ const useAudioController = () => {
     togglePlayPause,
     isBusy,
     seekTo,
+    skipTo,
+    skipBack,
   };
 };
 

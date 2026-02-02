@@ -15,6 +15,7 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
+  withTiming,
 } from 'react-native-reanimated';
 import { BlurView } from '@react-native-community/blur';
 
@@ -28,20 +29,20 @@ export interface AppModalRef {
 interface Props {
   children: ReactNode;
   visible: boolean;
-  onRequestClose: () => void;
+  onCloseComplete?: () => void;
 }
 
 const { height } = Dimensions.get('window');
 const modalHeight = height - 150;
 
 const SPRING = {
-  damping: 22,
-  stiffness: 220,
-  mass: 0.7,
+  damping: 30,
+  stiffness: 360,
+  mass: 0.6,
 };
 
 const AppModal = forwardRef<AppModalRef, Props>(
-  ({ children, visible, onRequestClose }, ref) => {
+  ({ children, visible, onCloseComplete }, ref) => {
     const translateY = useSharedValue(modalHeight);
     const backdropOpacity = useSharedValue(0);
     const isGestureEnabled = useSharedValue(true);
@@ -74,24 +75,16 @@ const AppModal = forwardRef<AppModalRef, Props>(
       translateY.value = withSpring(0, SPRING);
     };
 
-    const onCloseComplete = () => {
-      onRequestClose?.(); // tell parent modal fully closed
-    };
-
     const closeSheetWorklet = () => {
       'worklet';
-      backdropOpacity.value = withSpring(
-        0,
-        { damping: 18, stiffness: 150 },
-        () => {
-          runOnJS(onCloseComplete)(); // call parent on JS thread after animation
-        },
-      );
 
-      translateY.value = withSpring(modalHeight, {
-        damping: 18,
-        stiffness: 150,
+      backdropOpacity.value = withTiming(0, { duration: 420 }, finished => {
+        if (finished && onCloseComplete) {
+          runOnJS(onCloseComplete)();
+        }
       });
+
+      translateY.value = withSpring(modalHeight, SPRING);
     };
 
     const closeSheetOnBackdrop = () => {

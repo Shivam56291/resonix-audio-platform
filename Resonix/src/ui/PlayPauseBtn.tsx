@@ -1,6 +1,11 @@
 import { FC } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+} from 'react-native-reanimated';
 
 import colors from '@utils/colors';
 
@@ -9,33 +14,55 @@ interface Props {
   size?: number;
   playing?: boolean;
   onPress?: () => void;
+  bgColor?: string;
 }
 
 const PlayPauseBtn: FC<Props> = ({
   color = colors.CONTRAST,
   size = 24,
   playing,
+  bgColor = colors.CONTRAST,
   onPress,
 }) => {
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
   return (
-    <Pressable
-      style={({ pressed }) => [styles.iconButton, pressed && styles.pressed]}
-      onPress={onPress}
-    >
-      {playing ? (
-        <Ionicons name="pause" size={size} color={color} />
-      ) : (
-        <Ionicons name="play" size={size} color={color} />
-      )}
-    </Pressable>
+    <Animated.View style={animatedStyle}>
+      <Pressable
+        onPressIn={() => (scale.value = withSpring(0.9))}
+        onPressOut={() => (scale.value = withSpring(1))}
+        onPress={onPress}
+        style={[
+          styles.iconButton,
+          {
+            backgroundColor: bgColor,
+            width: size + 10,
+            height: size + 10,
+            borderRadius: (size + 10) / 2,
+          },
+        ]}
+      >
+        {playing ? (
+          <Ionicons name="pause" size={size} color={color} />
+        ) : (
+          <Ionicons
+            name="play"
+            size={size}
+            color={color}
+            style={{ marginLeft: size * 0.14 }}
+          />
+        )}
+      </Pressable>
+    </Animated.View>
   );
 };
 
 const styles = StyleSheet.create({
   iconButton: {
-    width: 45,
-    height: 45,
-    borderRadius: 22.5,
     justifyContent: 'center',
     alignItems: 'center',
   },

@@ -1,11 +1,16 @@
-import { FC, ReactNode, useRef } from 'react';
-import { StyleSheet, View, Image, Text, Pressable } from 'react-native';
+import { FC, useRef } from 'react';
+import { StyleSheet, View, Text } from 'react-native';
 import { useProgress } from 'react-native-track-player';
 import formatDuration from 'format-duration';
 import { useSelector } from 'react-redux';
 import Slider, { SliderProps } from '@react-native-community/slider';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated';
 
 import { getPlayerState } from 'store/player';
 import AppModal from '@ui/AppModal';
@@ -14,11 +19,12 @@ import AppLink from 'ui/AppLink';
 import useAudioController from 'src/hooks/useAudioController';
 import PlayPauseBtn from 'ui/PlayPauseBtn';
 import type { AppModalRef } from '@ui/AppModal';
+import PlayerController from 'ui/PlayerController';
+import Loader from 'ui/Loader';
 
 interface Props {
   visible: boolean;
-  onRequestClose: () => void;
-  children: ReactNode;
+  onCloseComplete: () => void;
 }
 
 interface ExtendedSliderProps extends SliderProps {
@@ -29,25 +35,56 @@ const formattedDuration = (duration = 0) => {
   return formatDuration(duration, { leading: true });
 };
 
-const AudioPlayer: FC<Props> = ({ visible, onRequestClose, children }) => {
+const AudioPlayer: FC<Props> = ({ visible, onCloseComplete }) => {
   const { duration, position } = useProgress();
   const { onGoingAudio } = useSelector(getPlayerState);
   const source = onGoingAudio?.poster
     ? { uri: onGoingAudio?.poster }
     : require('../../assets/music.png');
 
-  const { seekTo } = useAudioController();
+  const imageScale = useSharedValue(0.95);
+  const controlsTranslate = useSharedValue(20);
+
+  const { isPlaying, isBusy, seekTo, skipTo, togglePlayPause } =
+    useAudioController();
   const modalRef = useRef<AppModalRef>(null);
 
   const updateSeek = async (value: number) => {
     await seekTo(value);
   };
 
+  const handleSkipTo = async (skipType: 'forward' | 'reverse') => {
+    await skipTo(skipType === 'forward' ? 10 : -10);
+  };
+
+  if (isPlaying) {
+    imageScale.value = withSpring(1);
+  } else {
+    imageScale.value = withSpring(0.95);
+  }
+  if (visible) {
+    controlsTranslate.value = withSpring(0);
+  } else {
+    controlsTranslate.value = withSpring(20);
+  }
+
+  const imageStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: imageScale.value }],
+  }));
+  const controlsStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: controlsTranslate.value }],
+    opacity: controlsTranslate.value === 0 ? 1 : 0.8,
+  }));
+
   return (
-    <AppModal ref={modalRef} visible={visible} onRequestClose={onRequestClose}>
+    <AppModal
+      ref={modalRef}
+      visible={visible}
+      onCloseComplete={onCloseComplete}
+    >
       <View style={styles.container}>
-        <Image source={source} style={styles.poster} />
-        {children}
+        <Animated.Image source={source} style={[styles.poster, imageStyle]} />
+
         <View style={styles.contentContainer}>
           <Text style={styles.title}>{onGoingAudio?.title}</Text>
           <AppLink
@@ -79,71 +116,56 @@ const AudioPlayer: FC<Props> = ({ visible, onRequestClose, children }) => {
               },
             } as ExtendedSliderProps)}
           />
-
-          <View style={styles.controls}>
-            <Pressable
-              style={{
-                width: 45,
-                height: 45,
-                justifyContent: 'center',
-                alignItems: 'center',
-                borderRadius: 25,
-              }}
-            >
+          <Animated.View style={[styles.controls, controlsStyle]}>
+            <PlayerController onPress={() => {}} ignoreContainer>
               <AntDesign
                 name="stepbackward"
                 size={24}
                 color={colors.CONTRAST}
               />
-            </Pressable>
+            </PlayerController>
 
-            <Pressable
-              style={{
-                width: 45,
-                height: 45,
-                justifyContent: 'center',
-                alignItems: 'center',
-                borderRadius: 25,
-              }}
+            <PlayerController
+              onPress={() => handleSkipTo('reverse')}
+              ignoreContainer
             >
               <FontAwesome
                 name="rotate-left"
                 size={18}
                 color={colors.CONTRAST}
               />
-            </Pressable>
-            <PlayPauseBtn
-              color={colors.CONTRAST}
-              playing={true}
-              onPress={() => {}}
-            />
-            <Pressable
-              style={{
-                width: 45,
-                height: 45,
-                justifyContent: 'center',
-                alignItems: 'center',
-                borderRadius: 25,
-              }}
+              <Text style={styles.skipText}>-10s</Text>
+            </PlayerController>
+            {isBusy ? (
+              <Loader
+                size={50}
+                color={colors.PRIMARY}
+                bgColor={colors.CONTRAST}
+              />
+            ) : (
+              <PlayPauseBtn
+                color={colors.PRIMARY}
+                playing={isPlaying}
+                onPress={() => togglePlayPause()}
+                size={50}
+              />
+            )}
+
+            <PlayerController
+              onPress={() => handleSkipTo('forward')}
+              ignoreContainer
             >
               <FontAwesome
                 name="rotate-right"
                 size={18}
                 color={colors.CONTRAST}
               />
-            </Pressable>
-            <Pressable
-              style={{
-                width: 45,
-                height: 45,
-                justifyContent: 'center',
-                alignItems: 'center',
-                borderRadius: 25,
-              }}
-            >
+              <Text style={styles.skipText}>+10s</Text>
+            </PlayerController>
+            <PlayerController onPress={() => {}} ignoreContainer>
               <AntDesign name="stepforward" size={24} color={colors.CONTRAST} />
-            </Pressable>
-          </View>
+            </PlayerController>
+          </Animated.View>
         </View>
       </View>
     </AppModal>
@@ -157,9 +179,15 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   poster: {
-    width: 200,
-    height: 200,
+    marginTop: 20,
+    width: 220,
+    height: 220,
     borderRadius: 10,
+  },
+  skipText: {
+    fontSize: 12,
+    color: colors.CONTRAST,
+    marginTop: 2,
   },
   contentContainer: {
     width: '100%',
@@ -174,7 +202,7 @@ const styles = StyleSheet.create({
   durationContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 10,
+    paddingVertical: 15,
   },
   duration: {
     fontSize: 14,
@@ -184,7 +212,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 25,
   },
 });
 

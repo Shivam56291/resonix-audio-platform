@@ -12,9 +12,10 @@ import colors from '@utils/colors';
 interface Props {
   color?: string;
   size?: number;
+  bgColor?: string;
 }
 
-const Loader: FC<Props> = ({ color = colors.CONTRAST, size = 24 }) => {
+const Loader: FC<Props> = ({ color = colors.CONTRAST, size = 24, bgColor }) => {
   const initialRotation = useSharedValue(0);
 
   const transform = useAnimatedStyle(() => {
@@ -37,7 +38,12 @@ const Loader: FC<Props> = ({ color = colors.CONTRAST, size = 24 }) => {
 
   return (
     <Animated.View style={transform}>
-      <Feather name="loader" size={size} color={color} />
+      <Feather
+        name="loader"
+        size={size}
+        color={color}
+        style={{ backgroundColor: bgColor, padding: 5, borderRadius: size / 2 }}
+      />
     </Animated.View>
   );
 };
