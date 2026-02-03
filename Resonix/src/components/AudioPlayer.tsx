@@ -1,8 +1,8 @@
-import { FC, useRef } from 'react';
+import { FC, useEffect, useRef } from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import { useProgress } from 'react-native-track-player';
 import formatDuration from 'format-duration';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import Slider, { SliderProps } from '@react-native-community/slider';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -12,7 +12,7 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 
-import { getPlayerState } from 'store/player';
+import { getPlayerState, updatePlaybackRate } from 'store/player';
 import AppModal from '@ui/AppModal';
 import colors from 'utils/colors';
 import AppLink from 'ui/AppLink';
@@ -21,6 +21,8 @@ import PlayPauseBtn from 'ui/PlayPauseBtn';
 import type { AppModalRef } from '@ui/AppModal';
 import PlayerController from 'ui/PlayerController';
 import Loader from 'ui/Loader';
+import { hapticLight, hapticMedium } from '@utils/haptics';
+import PlaybackRateSelector from 'ui/PlaybackRateSelector';
 
 interface Props {
   visible: boolean;
@@ -37,16 +39,25 @@ const formattedDuration = (duration = 0) => {
 
 const AudioPlayer: FC<Props> = ({ visible, onCloseComplete }) => {
   const { duration, position } = useProgress();
-  const { onGoingAudio } = useSelector(getPlayerState);
+  const { onGoingAudio, playbackRate } = useSelector(getPlayerState);
   const source = onGoingAudio?.poster
     ? { uri: onGoingAudio?.poster }
     : require('../../assets/music.png');
+  const dispatch = useDispatch();
 
   const imageScale = useSharedValue(0.95);
   const controlsTranslate = useSharedValue(20);
 
-  const { isPlaying, isBusy, seekTo, skipTo, togglePlayPause } =
-    useAudioController();
+  const {
+    isPlaying,
+    isBusy,
+    seekTo,
+    skipTo,
+    togglePlayPause,
+    onNextPress,
+    onPreviousPress,
+    setPlaybackRate,
+  } = useAudioController();
   const modalRef = useRef<AppModalRef>(null);
 
   const updateSeek = async (value: number) => {
@@ -57,24 +68,34 @@ const AudioPlayer: FC<Props> = ({ visible, onCloseComplete }) => {
     await skipTo(skipType === 'forward' ? 10 : -10);
   };
 
-  if (isPlaying) {
-    imageScale.value = withSpring(1);
-  } else {
-    imageScale.value = withSpring(0.95);
-  }
-  if (visible) {
-    controlsTranslate.value = withSpring(0);
-  } else {
-    controlsTranslate.value = withSpring(20);
-  }
+  useEffect(() => {
+    imageScale.value = withSpring(isPlaying ? 1 : 0.95, {
+      damping: 14,
+      stiffness: 180,
+      mass: 0.7,
+    });
+  }, [isPlaying, imageScale]);
+
+  useEffect(() => {
+    controlsTranslate.value = withSpring(visible ? 0 : 20, {
+      damping: 18,
+      stiffness: 160,
+    });
+  }, [visible, controlsTranslate]);
 
   const imageStyle = useAnimatedStyle(() => ({
     transform: [{ scale: imageScale.value }],
   }));
+
   const controlsStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: controlsTranslate.value }],
-    opacity: controlsTranslate.value === 0 ? 1 : 0.8,
+    opacity: 1 - controlsTranslate.value / 20,
   }));
+
+  const onPlaybackRatePress = async (rate: number) => {
+    await setPlaybackRate(rate);
+    dispatch(updatePlaybackRate(rate));
+  };
 
   return (
     <AppModal
@@ -117,7 +138,11 @@ const AudioPlayer: FC<Props> = ({ visible, onCloseComplete }) => {
             } as ExtendedSliderProps)}
           />
           <Animated.View style={[styles.controls, controlsStyle]}>
-            <PlayerController onPress={() => {}} ignoreContainer>
+            <PlayerController
+              onPress={() => onPreviousPress()}
+              ignoreContainer
+              onHaptic={hapticMedium}
+            >
               <AntDesign
                 name="stepbackward"
                 size={24}
@@ -128,6 +153,7 @@ const AudioPlayer: FC<Props> = ({ visible, onCloseComplete }) => {
             <PlayerController
               onPress={() => handleSkipTo('reverse')}
               ignoreContainer
+              onHaptic={hapticLight}
             >
               <FontAwesome
                 name="rotate-left"
@@ -137,11 +163,18 @@ const AudioPlayer: FC<Props> = ({ visible, onCloseComplete }) => {
               <Text style={styles.skipText}>-10s</Text>
             </PlayerController>
             {isBusy ? (
-              <Loader
-                size={50}
-                color={colors.PRIMARY}
-                bgColor={colors.CONTRAST}
-              />
+              <View
+                style={{
+                  width: 62,
+                  height: 62,
+                  borderRadius: 31,
+                  backgroundColor: colors.CONTRAST,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+              >
+                <Loader size={36} color={colors.PRIMARY} />
+              </View>
             ) : (
               <PlayPauseBtn
                 color={colors.PRIMARY}
@@ -154,6 +187,7 @@ const AudioPlayer: FC<Props> = ({ visible, onCloseComplete }) => {
             <PlayerController
               onPress={() => handleSkipTo('forward')}
               ignoreContainer
+              onHaptic={hapticLight}
             >
               <FontAwesome
                 name="rotate-right"
@@ -162,10 +196,20 @@ const AudioPlayer: FC<Props> = ({ visible, onCloseComplete }) => {
               />
               <Text style={styles.skipText}>+10s</Text>
             </PlayerController>
-            <PlayerController onPress={() => {}} ignoreContainer>
+            <PlayerController
+              onPress={() => onNextPress()}
+              ignoreContainer
+              onHaptic={hapticMedium}
+            >
               <AntDesign name="stepforward" size={24} color={colors.CONTRAST} />
             </PlayerController>
           </Animated.View>
+
+          <PlaybackRateSelector
+            onPress={onPlaybackRatePress}
+            containerStyle={{ marginTop: 20 }}
+            activeRate={playbackRate.toString()}
+          />
         </View>
       </View>
     </AppModal>

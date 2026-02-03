@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { FC, useEffect } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Animated, {
@@ -26,6 +26,14 @@ const PlayPauseBtn: FC<Props> = ({
 }) => {
   const scale = useSharedValue(1);
 
+  useEffect(() => {
+    scale.value = withSpring(playing ? 1 : 0.85, {
+      damping: 10,
+      stiffness: 250,
+      mass: 0.5,
+    });
+  }, [playing, scale]);
+
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
   }));
@@ -33,16 +41,23 @@ const PlayPauseBtn: FC<Props> = ({
   return (
     <Animated.View style={animatedStyle}>
       <Pressable
-        onPressIn={() => (scale.value = withSpring(0.9))}
-        onPressOut={() => (scale.value = withSpring(1))}
+        onPressIn={() => {
+          scale.value = withSpring(0.92, { damping: 15, stiffness: 300 });
+        }}
+        onPressOut={() => {
+          scale.value = withSpring(playing ? 1 : 0.9, {
+            damping: 12,
+            stiffness: 220,
+          });
+        }}
         onPress={onPress}
         style={[
           styles.iconButton,
           {
             backgroundColor: bgColor,
-            width: size + 10,
-            height: size + 10,
-            borderRadius: (size + 10) / 2,
+            width: size + 12,
+            height: size + 12,
+            borderRadius: (size + 12) / 2,
           },
         ]}
       >
@@ -65,10 +80,6 @@ const styles = StyleSheet.create({
   iconButton: {
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  pressed: {
-    transform: [{ scale: 0.95 }],
-    opacity: 0.6,
   },
 });
 

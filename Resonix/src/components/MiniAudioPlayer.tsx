@@ -39,7 +39,7 @@ const MiniAudiPlayer: FC<Props> = () => {
   const opacity = useSharedValue(1);
   const scale = useSharedValue(1);
   const progressOpacity = useSharedValue(1);
-  const posterScale = useSharedValue(1);
+  const posterScale = useSharedValue(0.85);
   const textOpacity = useSharedValue(1);
   const textTranslateY = useSharedValue(0);
 
@@ -48,12 +48,7 @@ const MiniAudiPlayer: FC<Props> = () => {
     opacity: opacity.value,
   }));
 
-  const fadeAnim = useSharedValue(1);
-  const isPlayingSV = useSharedValue(isPlaying);
-
-  useEffect(() => {
-    isPlayingSV.value = isPlaying;
-  }, [isPlaying, isPlayingSV]);
+  const fadeAnim = useSharedValue(0);
 
   const rotation = useSharedValue(0);
 
@@ -80,7 +75,7 @@ const MiniAudiPlayer: FC<Props> = () => {
     // animate mini player back
     opacity.value = withTiming(1, { duration: 220 });
 
-    // ⬇️ tiny delay ONLY on scale
+    // tiny delay ONLY on scale
     scale.value = withDelay(40, withTiming(1, { duration: 260 }));
 
     translateY.value = withTiming(0, { duration: 280 });
@@ -97,20 +92,8 @@ const MiniAudiPlayer: FC<Props> = () => {
     setPlayerVisibility(true);
   };
 
-  useEffect(() => {
-    if (isPlaying) {
-      rotation.value = withRepeat(
-        withTiming(360, { duration: 8300 }),
-        -1,
-        false,
-      );
-    } else {
-      rotation.value = withTiming(rotation.value % 360, { duration: 300 });
-    }
-  }, [isPlaying, onGoingAudio?.id, rotation]);
-
   const onModalClosed = useCallback(() => {
-    closePlayerModal(); // animate mini player back AFTER modal closes
+    closePlayerModal();
   }, [closePlayerModal]);
 
   useEffect(() => {
@@ -156,10 +139,6 @@ const MiniAudiPlayer: FC<Props> = () => {
     textTranslateY,
   ]);
 
-  const source = displayedAudio?.poster
-    ? { uri: displayedAudio.poster }
-    : require('../../assets/music.png');
-
   const progressWidth =
     progress.duration > 0
       ? mapRange({
@@ -172,8 +151,30 @@ const MiniAudiPlayer: FC<Props> = () => {
       : 0;
 
   useEffect(() => {
+    return () => {
+      rotation.value = 0;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
     rotation.value = 0;
-  }, [onGoingAudio?.id, rotation]);
+
+    if (isPlaying) {
+      rotation.value = withRepeat(
+        withTiming(360, { duration: 8300 }),
+        -1,
+        false,
+      );
+    } else {
+      rotation.value = withTiming(0, { duration: 300 });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPlaying, onGoingAudio?.id]);
+
+  const source = displayedAudio?.poster
+    ? { uri: displayedAudio.poster }
+    : require('../../assets/music.png');
 
   return (
     <>
@@ -197,6 +198,15 @@ const MiniAudiPlayer: FC<Props> = () => {
       <Animated.View style={[styles.container, miniPlayerStyle]}>
         <Animated.Image
           source={source}
+          onLoad={() => {
+
+            fadeAnim.value = withTiming(1, { duration: 220 });
+
+            posterScale.value = withSpring(1, {
+              damping: 24,
+              stiffness: 220,
+            });
+          }}
           style={[
             styles.poster,
             posterAnimatedStyle,
@@ -241,7 +251,12 @@ const MiniAudiPlayer: FC<Props> = () => {
             <Loader size={24} color={colors.CONTRAST} />
           </View>
         ) : (
-          <PlayPauseBtn playing={isPlaying} onPress={togglePlayPause} color={colors.CONTRAST} bgColor={colors.PRIMARY} />
+          <PlayPauseBtn
+            playing={isPlaying}
+            onPress={togglePlayPause}
+            color={colors.CONTRAST}
+            bgColor={colors.PRIMARY}
+          />
         )}
       </Animated.View>
 

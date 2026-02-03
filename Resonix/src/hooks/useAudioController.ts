@@ -124,6 +124,56 @@ const useAudioController = () => {
     }
   };
 
+  const onNextPress = async () => {
+    try {
+      await TrackPlayer.skipToNext();
+
+      await TrackPlayer.play()
+
+      setTimeout(async () => {
+        const activeTrack = await TrackPlayer.getActiveTrack();
+        if (!activeTrack) return;
+
+        const nextIndex = onGoingList.findIndex(
+          item => item.id === activeTrack.id,
+        );
+
+        if (nextIndex !== -1) {
+          dispatch(updateOnGoingAudio(onGoingList[nextIndex]));
+        }
+      }, 50);
+    } catch {
+      // No next track → do nothing
+    }
+  };
+
+  const onPreviousPress = async () => {
+    try {
+      await TrackPlayer.skipToPrevious();
+
+      await TrackPlayer.play();
+
+      setTimeout(async () => {
+        const activeTrack = await TrackPlayer.getActiveTrack();
+        if (!activeTrack) return;
+
+        const nextIndex = onGoingList.findIndex(
+          item => item.id === activeTrack.id,
+        );
+
+        if (nextIndex !== -1) {
+          dispatch(updateOnGoingAudio(onGoingList[nextIndex]));
+        }
+      }, 50);
+    } catch {
+      // No previous track → do nothing
+    }
+  };
+
+  const setPlaybackRate = async (rate: number) => {
+    await TrackPlayer.setRate(rate);
+  };
+
   return {
     onAudioPress,
     isPlayerReady,
@@ -133,6 +183,9 @@ const useAudioController = () => {
     seekTo,
     skipTo,
     skipBack,
+    onNextPress,
+    onPreviousPress,
+    setPlaybackRate,
   };
 };
 
