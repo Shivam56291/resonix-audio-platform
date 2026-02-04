@@ -4,13 +4,15 @@ import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import colors from '@utils/colors';
 import { AudioData } from 'src/@types/audio';
 import { hapticLight } from 'utils/haptics';
+import PlayAnimation from './PlayAnimation';
 
 interface Props {
   audio: AudioData;
   onPress?: () => void;
+  isPlaying?: boolean;
 }
 
-const AudioListItem: FC<Props> = ({ audio, onPress }) => {
+const AudioListItem: FC<Props> = ({ audio, onPress, isPlaying = false }) => {
   const getSource = (poster?: string) => {
     return poster ? { uri: poster } : require('src/../assets/music_small.png');
   };
@@ -25,7 +27,10 @@ const AudioListItem: FC<Props> = ({ audio, onPress }) => {
       onPress={handlePress}
       style={({ pressed }) => [styles.listItem, pressed && styles.pressed]}
     >
-      <Image source={getSource(audio.poster)} style={styles.poster} />
+      <View>
+        <Image source={getSource(audio.poster)} style={styles.poster} />
+        <PlayAnimation visible={isPlaying} />
+      </View>
       <View style={styles.infoContainer}>
         <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">
           {audio.title}

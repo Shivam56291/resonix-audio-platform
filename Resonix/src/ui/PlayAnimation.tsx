@@ -29,12 +29,13 @@ const styles = StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFill,
     alignItems: 'center',
-    justifyContent: 'center', // vertical center
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.4)',
   },
   strokeContainer: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    height: 20, // max height of animation
+    height: 20,
   },
 });
 

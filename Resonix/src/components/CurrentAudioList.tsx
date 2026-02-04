@@ -3,6 +3,7 @@ import AudioListModal from '@ui/AudioListModal';
 import { useSelector } from 'react-redux';
 
 import { getPlayerState } from 'store/player';
+import useAudioController from 'hooks/useAudioController';
 
 interface Props {
   visible: boolean;
@@ -10,10 +11,19 @@ interface Props {
 }
 
 const CurrentAudioList: FC<Props> = ({ visible, onRequestClose }) => {
+  const { onGoingList } = useSelector(getPlayerState);
+  const {onAudioPress} = useAudioController()
 
-  const {onGoingList} = useSelector(getPlayerState)
-
-  return <AudioListModal header="Current Audio List" visible={visible} onRequestClose={onRequestClose} data={onGoingList}/>
+  return (
+    <AudioListModal
+      header="Current Audio List"
+      visible={visible}
+      onRequestClose={onRequestClose}
+      data={onGoingList}
+      loading={onGoingList.length === 0}
+      onItemPress={onAudioPress}
+    />
+  );
 };
 
 export default CurrentAudioList;
