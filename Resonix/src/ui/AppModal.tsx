@@ -30,6 +30,7 @@ interface Props {
   children: ReactNode;
   visible: boolean;
   onCloseComplete?: () => void;
+  onRequestClose?: () => void;
 }
 
 const { height } = Dimensions.get('window');
@@ -42,7 +43,7 @@ const SPRING = {
 };
 
 const AppModal = forwardRef<AppModalRef, Props>(
-  ({ children, visible, onCloseComplete }, ref) => {
+  ({ children, visible, onCloseComplete, onRequestClose }, ref) => {
     const translateY = useSharedValue(modalHeight);
     const backdropOpacity = useSharedValue(0);
     const isGestureEnabled = useSharedValue(true);
@@ -79,8 +80,9 @@ const AppModal = forwardRef<AppModalRef, Props>(
       'worklet';
 
       backdropOpacity.value = withTiming(0, { duration: 420 }, finished => {
-        if (finished && onCloseComplete) {
-          runOnJS(onCloseComplete)();
+        if (finished) {
+          if (onCloseComplete) runOnJS(onCloseComplete)();
+          if (onRequestClose) runOnJS(onRequestClose)();
         }
       });
 
@@ -93,6 +95,10 @@ const AppModal = forwardRef<AppModalRef, Props>(
         damping: 20,
         stiffness: 160,
       });
+
+      if (onRequestClose) {
+        runOnJS(onRequestClose)();
+      }
     };
 
     /* ------------------ gesture ------------------ */

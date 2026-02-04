@@ -1,5 +1,5 @@
-import { FC, useEffect, useRef } from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import { FC, useEffect, useRef, useState } from 'react';
+import { StyleSheet, View, Text, Pressable } from 'react-native';
 import { useProgress } from 'react-native-track-player';
 import formatDuration from 'format-duration';
 import { useDispatch, useSelector } from 'react-redux';
@@ -11,6 +11,7 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
+import MaterialCommunityIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import { getPlayerState, updatePlaybackRate } from 'store/player';
 import AppModal from '@ui/AppModal';
@@ -23,10 +24,12 @@ import PlayerController from 'ui/PlayerController';
 import Loader from 'ui/Loader';
 import { hapticLight, hapticMedium } from '@utils/haptics';
 import PlaybackRateSelector from 'ui/PlaybackRateSelector';
+import AudioInfoContainer from './AudioInfoContainer';
 
 interface Props {
   visible: boolean;
   onCloseComplete: () => void;
+  onListOptionPress?: () => void;
 }
 
 interface ExtendedSliderProps extends SliderProps {
@@ -37,7 +40,12 @@ const formattedDuration = (duration = 0) => {
   return formatDuration(duration, { leading: true });
 };
 
-const AudioPlayer: FC<Props> = ({ visible, onCloseComplete }) => {
+const AudioPlayer: FC<Props> = ({
+  visible,
+  onCloseComplete,
+  onListOptionPress,
+}) => {
+  const [showAudioInfo, setShowAudioInfo] = useState(false);
   const { duration, position } = useProgress();
   const { onGoingAudio, playbackRate } = useSelector(getPlayerState);
   const source = onGoingAudio?.poster
@@ -104,6 +112,23 @@ const AudioPlayer: FC<Props> = ({ visible, onCloseComplete }) => {
       onCloseComplete={onCloseComplete}
     >
       <View style={styles.container}>
+        <AudioInfoContainer
+          visible={showAudioInfo}
+          closeHandler={setShowAudioInfo}
+        />
+        <Pressable
+          onPress={() => setShowAudioInfo(true)}
+          style={({ pressed }) => {
+            return [styles.infoBtn, pressed && styles.pressed];
+          }}
+        >
+          <MaterialCommunityIcon
+            name="information-outline"
+            size={24}
+            color={colors.CONTRAST}
+          />
+        </Pressable>
+
         <Animated.Image source={source} style={[styles.poster, imageStyle]} />
 
         <View style={styles.contentContainer}>
@@ -205,11 +230,30 @@ const AudioPlayer: FC<Props> = ({ visible, onCloseComplete }) => {
             </PlayerController>
           </Animated.View>
 
-          <PlaybackRateSelector
-            onPress={onPlaybackRatePress}
-            containerStyle={{ marginTop: 20 }}
-            activeRate={playbackRate.toString()}
-          />
+          <View style={{ alignItems: 'center', marginTop: 25 }}>
+            <PlaybackRateSelector
+              onPress={onPlaybackRatePress}
+              activeRate={playbackRate.toString()}
+            />
+            <Text
+              style={{
+                fontSize: 12,
+                color: colors.INACTIVE_CONTRAST,
+                marginTop: 6,
+              }}
+            >
+              Playback speed
+            </Text>
+          </View>
+          <View style={styles.listOptionBtnContainer}>
+            <PlayerController ignoreContainer onPress={onListOptionPress}>
+              <MaterialCommunityIcon
+                name="playlist-music"
+                size={24}
+                color={colors.CONTRAST}
+              />
+            </PlayerController>
+          </View>
         </View>
       </View>
     </AppModal>
@@ -223,7 +267,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   poster: {
-    marginTop: 20,
+    marginTop: 15,
     width: 220,
     height: 220,
     borderRadius: 10,
@@ -257,6 +301,18 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: 25,
+  },
+  pressed: {
+    opacity: 0.6,
+    transform: [{ scale: 0.9 }],
+  },
+  infoBtn: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+  },
+  listOptionBtnContainer: {
+    alignItems: 'flex-end',
   },
 });
 

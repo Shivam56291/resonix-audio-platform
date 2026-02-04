@@ -21,6 +21,7 @@ import useAudioController from 'src/hooks/useAudioController';
 import { mapRange } from '@utils/math';
 import Loader from '@ui/Loader';
 import AudioPlayer from './AudioPlayer';
+import CurrentAudioList from './CurrentAudioList';
 
 interface Props {}
 
@@ -34,6 +35,7 @@ const MiniAudiPlayer: FC<Props> = () => {
   const progress = useProgress();
   const [playerVisibility, setPlayerVisibility] = useState(false);
   const [displayedAudio, setDisplayedAudio] = useState(onGoingAudio);
+  const [showCurrentList, setShowCurrentList] = useState(false);
 
   const translateY = useSharedValue(0);
   const opacity = useSharedValue(1);
@@ -175,6 +177,15 @@ const MiniAudiPlayer: FC<Props> = () => {
   const source = displayedAudio?.poster
     ? { uri: displayedAudio.poster }
     : require('../../assets/music.png');
+  
+  const handleOnCurrentListClose = () => {
+    setShowCurrentList(false);
+  };
+
+  const handleOnListOptionPress = () => {
+    closePlayerModal();
+    setShowCurrentList(true);
+  };
 
   return (
     <>
@@ -260,7 +271,9 @@ const MiniAudiPlayer: FC<Props> = () => {
         )}
       </Animated.View>
 
-      <AudioPlayer visible={playerVisibility} onCloseComplete={onModalClosed} />
+      <AudioPlayer visible={playerVisibility} onCloseComplete={onModalClosed} onListOptionPress={handleOnListOptionPress} />
+
+      <CurrentAudioList visible={showCurrentList} onRequestClose={handleOnCurrentListClose}/>
     </>
   );
 };

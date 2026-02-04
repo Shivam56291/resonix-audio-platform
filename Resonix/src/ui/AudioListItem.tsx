@@ -3,6 +3,7 @@ import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import colors from '@utils/colors';
 import { AudioData } from 'src/@types/audio';
+import { hapticLight } from 'utils/haptics';
 
 interface Props {
   audio: AudioData;
@@ -14,9 +15,14 @@ const AudioListItem: FC<Props> = ({ audio, onPress }) => {
     return poster ? { uri: poster } : require('src/../assets/music_small.png');
   };
 
+  const handlePress = () => {
+    hapticLight();
+    onPress?.();
+  };
+
   return (
     <Pressable
-      onPress={onPress}
+      onPress={handlePress}
       style={({ pressed }) => [styles.listItem, pressed && styles.pressed]}
     >
       <Image source={getSource(audio.poster)} style={styles.poster} />
@@ -45,7 +51,8 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.SECONDARY,
   },
   pressed: {
-    opacity: 0.5,
+    transform: [{ scale: 0.97 }],
+    opacity: 0.6,
   },
   poster: {
     width: 50,
