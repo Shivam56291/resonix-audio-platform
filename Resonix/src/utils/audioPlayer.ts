@@ -22,7 +22,7 @@ export const setupTrackPlayer = async () => {
       Capability.SkipToPrevious,
       Capability.Stop,
     ],
-    progressUpdateEventInterval: 1,
+    progressUpdateEventInterval: 10,
   });
 
   isInitialized = true;

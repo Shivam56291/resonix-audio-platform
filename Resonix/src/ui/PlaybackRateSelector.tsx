@@ -1,5 +1,6 @@
 import { FC, useEffect, useState } from 'react';
 import {
+  Modal,
   Pressable,
   StyleProp,
   StyleSheet,
@@ -33,64 +34,84 @@ const PlaybackRateSelector: FC<Props> = ({
   onPress,
 }) => {
   const [expanded, setExpanded] = useState(false);
+
   const width = useSharedValue(0);
   const scale = useSharedValue(0.95);
   const opacity = useSharedValue(0);
 
-  const handleOnPress = () => {
-    setExpanded(prev => {
-      const next = !prev;
-      width.value = withTiming(next ? selectorSize * speedRates.length : 0, {
+  const toggle = () => setExpanded(prev => !prev);
+  const collapse = () => setExpanded(false);
+
+  useEffect(() => {
+    if (expanded) {
+      width.value = withTiming(selectorSize * speedRates.length, {
         duration: 140,
       });
-      scale.value = withSpring(next ? 1 : 0.95, {
+      scale.value = withSpring(1, {
         damping: 14,
         stiffness: 180,
       });
-      opacity.value = withTiming(next ? 1 : 0, { duration: 120 });
-      return next;
-    });
-  };
+      opacity.value = withTiming(1, { duration: 120 });
+    } else {
+      width.value = withTiming(0, { duration: 120 });
+      opacity.value = withTiming(0, { duration: 100 });
+      scale.value = withSpring(0.95);
+    }
+  }, [expanded, width, scale, opacity]);
 
   const widthStyle = useAnimatedStyle(() => ({
     width: width.value,
   }));
+
   const containerStyleAnim = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
     opacity: opacity.value,
   }));
 
   return (
-    <View style={[styles.container, containerStyle]}>
-      {!expanded && (
-        <Pressable onPress={handleOnPress}>
-          <FontAwesome5Icon name="running" size={24} color={colors.CONTRAST} />
-        </Pressable>
-      )}
+    <>
+      {/* Outside click handler */}
+      <Modal visible={expanded} transparent animationType="none">
+        <Pressable
+          style={[
+            StyleSheet.absoluteFill,
+            { backgroundColor: 'rgba(0,0,0,0.08)' },
+          ]}
+          onPress={collapse}
+        />
+      </Modal>
 
-      {expanded && (
-        <Animated.View style={[styles.buttons, widthStyle, containerStyleAnim]}>
-          {speedRates.map((rate, index) => {
-            return (
+      <View style={[styles.container, containerStyle]}>
+        {!expanded && (
+          <Pressable onPress={toggle}>
+            <FontAwesome5Icon
+              name="running"
+              size={24}
+              color={colors.CONTRAST}
+            />
+          </Pressable>
+        )}
+
+        {expanded && (
+          <Animated.View
+            style={[styles.buttons, widthStyle, containerStyleAnim]}
+          >
+            {speedRates.map(rate => (
               <Selector
-                key={index}
+                key={rate}
                 value={rate}
+                active={activeRate === rate}
                 onPress={() => {
                   hapticLight();
                   onPress?.(+rate);
-                  setExpanded(false);
-
-                  width.value = withTiming(0, { duration: 120 });
-                  opacity.value = withTiming(0, { duration: 100 });
-                  scale.value = withSpring(0.95);
+                  collapse();
                 }}
-                active={activeRate === rate}
               />
-            );
-          })}
-        </Animated.View>
-      )}
-    </View>
+            ))}
+          </Animated.View>
+        )}
+      </View>
+    </>
   );
 };
 
@@ -101,33 +122,28 @@ interface SelectorProps {
 }
 
 const Selector: FC<SelectorProps> = ({ value, active, onPress }) => {
-  const activeScale = useSharedValue(active ? 1.05 : 1);
-
-  const styleAnim = useAnimatedStyle(() => ({
-    transform: [{ scale: activeScale.value }],
-  }));
+  const scale = useSharedValue(1);
 
   useEffect(() => {
-    activeScale.value = withTiming(active ? 1.05 : 1, { duration: 120 });
-  }, [active, activeScale]);
+    scale.value = withTiming(active ? 1.05 : 1, {
+      duration: 120,
+    });
+  }, [active, scale]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
 
   return (
-    <Animated.View style={styleAnim}>
+    <Animated.View style={animatedStyle}>
       <Pressable
         onPress={onPress}
         style={[
           styles.selector,
-          {
-            backgroundColor: active ? colors.SECONDARY : undefined,
-          },
+          active && { backgroundColor: colors.SECONDARY },
         ]}
       >
-        <Text
-          style={[
-            styles.selectorText,
-            { fontWeight: active ? '700' : undefined },
-          ]}
-        >
+        <Text style={[styles.selectorText, active && { fontWeight: '700' }]}>
           {value}
         </Text>
       </Pressable>

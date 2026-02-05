@@ -1,11 +1,5 @@
 import { FC, useEffect, useRef, useState } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  Pressable,
-  useWindowDimensions,
-} from 'react-native';
+import { StyleSheet, View, Text, Pressable } from 'react-native';
 import { useProgress } from 'react-native-track-player';
 import formatDuration from 'format-duration';
 import { useDispatch, useSelector } from 'react-redux';
@@ -31,6 +25,7 @@ import Loader from 'ui/Loader';
 import { hapticLight, hapticMedium } from '@utils/haptics';
 import PlaybackRateSelector from 'ui/PlaybackRateSelector';
 import AudioInfoContainer from './AudioInfoContainer';
+import AudioWaveVisualizer from '@ui/AudioWaveVisualizer';
 
 interface Props {
   visible: boolean;
@@ -59,9 +54,6 @@ const AudioPlayer: FC<Props> = ({
     : require('../../assets/music.png');
   const dispatch = useDispatch();
 
-  const ambientPulse = useSharedValue(1);
-  const ambientOpacity = useSharedValue(0);
-  const ambientScale = useSharedValue(0.95);
   const imageScale = useSharedValue(0.95);
   const controlsTranslate = useSharedValue(20);
 
@@ -113,28 +105,6 @@ const AudioPlayer: FC<Props> = ({
     await setPlaybackRate(rate);
     dispatch(updatePlaybackRate(rate));
   };
-
-  const { height } = useWindowDimensions();
-  const showAmbient = height > 680;
-
-  useEffect(() => {
-    ambientOpacity.value = withSpring(isPlaying ? 0.25 : 0.1);
-    ambientScale.value = withSpring(isPlaying ? 1 : 0.96);
-  }, [isPlaying, ambientOpacity, ambientScale]);
-
-  const ambientStyle = useAnimatedStyle(() => ({
-    opacity: ambientOpacity.value,
-    transform: [{ scaleX: ambientScale.value }, { scaleY: ambientPulse.value }],
-  }));
-
-  useEffect(() => {
-    if (!isPlaying) return;
-
-    ambientPulse.value = withSpring(1.04, {
-      damping: 8,
-      stiffness: 90,
-    });
-  }, [isPlaying, ambientPulse]);
 
   return (
     <AppModal
@@ -280,15 +250,9 @@ const AudioPlayer: FC<Props> = ({
               />
             </PlayerController>
           </View>
-
-          {showAmbient && (
-            <View style={styles.bottomUXContainer}>
-              <Animated.View style={[styles.ambientWrapper, ambientStyle]}>
-                <View style={styles.ambientGlow} />
-                <View style={styles.ambientCore} />
-              </Animated.View>
-            </View>
-          )}
+          <View style={styles.bottomUXContainer}>
+            <AudioWaveVisualizer playing={isPlaying} />
+          </View>
         </View>
       </View>
     </AppModal>
@@ -368,39 +332,10 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   bottomUXContainer: {
-    marginTop: 20,
+    marginTop: 10,
     alignItems: 'center',
-  },
-
-  ambientBar: {
-    width: '90%',
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.CONTRAST,
-    opacity: 0.08,
-  },
-  ambientWrapper: {
-    width: '90%',
-    height: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  ambientGlow: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    borderRadius: 24,
-    backgroundColor: colors.CONTRAST,
-    opacity: 0.15,
-  },
-
-  ambientCore: {
-    width: '70%',
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: colors.CONTRAST,
-    opacity: 0.5,
+    justifyContent: 'flex-end',
+    flex: 1,
   },
 });
 
