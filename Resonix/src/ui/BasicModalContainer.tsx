@@ -2,6 +2,7 @@ import { Modal, Pressable, StyleSheet, View, Animated } from 'react-native';
 import { useEffect, useRef, useState, ReactNode } from 'react';
 
 import colors from 'utils/colors';
+import { BlurView } from '@react-native-community/blur';
 
 interface Props {
   visible: boolean;
@@ -64,9 +65,15 @@ const BasicModalContainer = ({ visible, onRequestClose, children }: Props) => {
     <Modal visible={showModal} transparent animationType="none">
       <View style={styles.modalContainer}>
         <Animated.View
-          style={[styles.backdrop, { opacity: backdropOpacity }]}
-          pointerEvents="auto"
+          style={[StyleSheet.absoluteFill, { opacity: backdropOpacity }]}
         >
+          <BlurView
+            style={StyleSheet.absoluteFill}
+            blurType="dark"
+            blurAmount={0.5}
+            reducedTransparencyFallbackColor="rgba(0,0,0,0.12)"
+          />
+
           <Pressable style={StyleSheet.absoluteFill} onPress={onRequestClose} />
         </Animated.View>
 
@@ -104,8 +111,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.CONTRAST,
     borderRadius: 10,
     padding: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.15)',
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 12 },
   },
 });
-
 
 export default BasicModalContainer;

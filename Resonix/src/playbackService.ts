@@ -1,5 +1,40 @@
 import { getClient } from 'api/client';
 import TrackPlayer, { Event } from 'react-native-track-player';
+import { DeviceEventEmitter } from 'react-native';
+
+import { queryClient } from 'queryClient';
+
+DeviceEventEmitter.emit('HISTORY_UPDATED');
+
+const debounce = (fn: Function, delay: number) => {
+  let timeoutId: ReturnType<typeof setTimeout>;
+
+  return (...args: any[]) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      fn(...args);
+    }, delay);
+  };
+};
+
+interface StaleAudio {
+  audio: string;
+  progress: number;
+  date: Date;
+}
+
+const sendHistory = async (staleAudio: StaleAudio) => {
+  const client = await getClient();
+  await client
+    .post('/history', {
+      ...staleAudio,
+    })
+    .catch(err => console.log(err));
+
+  queryClient.invalidateQueries({ queryKey: ['histories'] });
+};
+
+const debouncedSendHistory = debounce(sendHistory, 1000);
 
 const playbackService = async () => {
   TrackPlayer.addEventListener(Event.RemotePlay, () => {
@@ -29,12 +64,13 @@ const playbackService = async () => {
     const lists = await TrackPlayer.getQueue();
     const audio = lists[event.track];
 
-    const client = await getClient();
-    await client.post('/history', {
+    const staleAudio: StaleAudio = {
       audio: audio.id,
       progress: event.position,
       date: new Date(Date.now()),
-    }).catch(err => console.log(err));
+    };
+
+    debouncedSendHistory(staleAudio);
   });
 };
 

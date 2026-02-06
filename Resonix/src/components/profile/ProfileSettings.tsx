@@ -1,9 +1,9 @@
 import { FC, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useDispatch, useSelector } from 'react-redux';
 import deepEqual from 'deep-equal';
 import ImagePicker from 'react-native-image-crop-picker';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import AppHeader from '@components/AppHeader';
 import colors from '@utils/colors';
@@ -20,6 +20,8 @@ import {
   getAuthState,
 } from '@store/auth';
 import ReverificationLink from 'components/ReverificationLink';
+import { useQueryClient } from '@tanstack/react-query';
+import ConfirmDialog from 'ui/ConfirmDialog';
 
 interface Props {}
 
@@ -30,11 +32,14 @@ interface ProfileInfo {
 
 const ProfileSettings: FC<Props> = () => {
   const [busy, setBusy] = useState(false);
+  const [showLogoutAllConfirm, setShowLogoutAllConfirm] = useState(false);
+  const [showClearHistoryConfirm, setShowClearHistoryConfirm] = useState(false);
   const [userInfo, setUserInfo] = useState<ProfileInfo>({
     name: '',
   });
   const dispatch = useDispatch();
   const { profile } = useSelector(getAuthState);
+  const queryClient = useQueryClient();
 
   const isSame = deepEqual(userInfo, {
     name: profile?.name,
@@ -62,6 +67,10 @@ const ProfileSettings: FC<Props> = () => {
     } finally {
       dispatch(updateBusyState(false));
     }
+  };
+
+  const handleLogoutFromAllConfirm = () => {
+    setShowLogoutAllConfirm(true);
   };
 
   const handleSubmit = async () => {
@@ -133,6 +142,32 @@ const ProfileSettings: FC<Props> = () => {
     }
   };
 
+  const clearHistory = async () => {
+    const client = await getClient();
+    try {
+      await client.delete('/history?all=yes');
+      queryClient.invalidateQueries({ queryKey: ['histories'] });
+      dispatch(
+        updateNotification({
+          message: 'History cleared successfully',
+          type: 'success',
+        }),
+      );
+    } catch (error) {
+      const errorMessage = catchAsyncError(error);
+      dispatch(
+        updateNotification({
+          message: errorMessage,
+          type: 'error',
+        }),
+      );
+    }
+  };
+
+  const handleOnHistoryClear = () => {
+    setShowClearHistoryConfirm(true);
+  };
+
   useEffect(() => {
     if (profile) {
       setUserInfo({
@@ -179,16 +214,44 @@ const ProfileSettings: FC<Props> = () => {
       </View>
 
       <View style={styles.titleContainer}>
+        <Text style={styles.title}>History</Text>
+      </View>
+
+      <View style={styles.settingOptionsContainer}>
+        <Pressable
+          onPress={handleOnHistoryClear}
+          style={({ pressed }) => [
+            styles.buttonContainer,
+            pressed && styles.pressed,
+          ]}
+        >
+          <MaterialCommunityIcons
+            name="delete-sweep-outline"
+            size={28}
+            color={colors.CONTRAST}
+          />
+          <Text style={styles.buttonTitle}>Clear All</Text>
+        </Pressable>
+      </View>
+
+      <View style={styles.titleContainer}>
         <Text style={styles.title}>Logout</Text>
       </View>
 
       <View style={styles.settingOptionsContainer}>
         <Pressable
-          onPress={() => handleLogout(true)}
-          style={({ pressed }) => [styles.logoutBtn, pressed && styles.pressed]}
+          onPress={handleLogoutFromAllConfirm}
+          style={({ pressed }) => [
+            styles.buttonContainer,
+            pressed && styles.pressed,
+          ]}
         >
-          <Ionicons name="log-out-outline" size={24} color={colors.CONTRAST} />
-          <Text style={styles.logoutBtnTitle}>Logout From All Devices</Text>
+          <MaterialCommunityIcons
+            name="logout"
+            size={24}
+            color={colors.CONTRAST}
+          />
+          <Text style={styles.buttonTitle}>Logout From All Devices</Text>
         </Pressable>
 
         <View
@@ -203,10 +266,17 @@ const ProfileSettings: FC<Props> = () => {
 
         <Pressable
           onPress={() => handleLogout()}
-          style={({ pressed }) => [styles.logoutBtn, pressed && styles.pressed]}
+          style={({ pressed }) => [
+            styles.buttonContainer,
+            pressed && styles.pressed,
+          ]}
         >
-          <Ionicons name="log-out-outline" size={24} color={colors.CONTRAST} />
-          <Text style={styles.logoutBtnTitle}>Logout</Text>
+          <MaterialCommunityIcons
+            name="logout"
+            size={24}
+            color={colors.CONTRAST}
+          />
+          <Text style={styles.buttonTitle}>Logout</Text>
         </Pressable>
       </View>
 
@@ -220,6 +290,29 @@ const ProfileSettings: FC<Props> = () => {
           />
         </View>
       ) : null}
+
+      <ConfirmDialog
+        visible={showLogoutAllConfirm}
+        title="Logout from all devices?"
+        message="You will be logged out from all active sessions on every device."
+        confirmText="Logout"
+        onCancel={() => setShowLogoutAllConfirm(false)}
+        onConfirm={() => {
+          setShowLogoutAllConfirm(false);
+          handleLogout(true);
+        }}
+      />
+      <ConfirmDialog
+        visible={showClearHistoryConfirm}
+        title="Clear listening history?"
+        message="This will permanently delete all your listening history. This action cannot be undone."
+        confirmText="Clear"
+        onCancel={() => setShowClearHistoryConfirm(false)}
+        onConfirm={() => {
+          setShowClearHistoryConfirm(false);
+          clearHistory();
+        }}
+      />
     </View>
   );
 };
@@ -248,6 +341,7 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.6,
+    transform: [{ scale: 0.98 }],
   },
   avatarContainer: {
     flexDirection: 'row',
@@ -279,12 +373,12 @@ const styles = StyleSheet.create({
     color: colors.CONTRAST,
     marginHorizontal: 12,
   },
-  logoutBtn: {
+  buttonContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 15,
   },
-  logoutBtnTitle: {
+  buttonTitle: {
     color: colors.CONTRAST,
     fontSize: 18,
     marginHorizontal: 12,

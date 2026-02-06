@@ -1,5 +1,10 @@
 import { FC } from 'react';
 import { View, StyleSheet, Text, Pressable } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+} from 'react-native-reanimated';
 
 import { Playlist } from 'src/@types/audio';
 import colors from '@utils/colors';
@@ -13,34 +18,44 @@ interface Props {
 
 const PlaylistItem: FC<Props> = ({ playlist, onPress }) => {
   const { title, visibility, itemsCount } = playlist;
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
 
   return (
     <Pressable
-      style={({ pressed }) => [styles.container, pressed && styles.pressed]}
+      onPressIn={() => (scale.value = withSpring(0.96, { damping: 15 }))}
+      onPressOut={() => (scale.value = withSpring(1, { damping: 15 }))}
       onPress={onPress}
     >
-      <View style={styles.posterContainer}>
-        <MaterialCommunityIcons
-          name="playlist-music"
-          size={30}
-          color={colors.CONTRAST}
-        />
-      </View>
-      <View style={styles.contentContainer}>
-        <Text numberOfLines={1} ellipsizeMode="tail" style={styles.title}>
-          {title}
-        </Text>
-        <View style={styles.iconContainer}>
-          <FontAwesome
-            name={visibility === 'public' ? 'globe' : 'lock'}
-            size={15}
-            color={colors.SECONDARY}
+      <Animated.View style={[styles.container, animatedStyle]}>
+        <View style={styles.posterContainer}>
+          <MaterialCommunityIcons
+            name="playlist-music"
+            size={26}
+            color={colors.CONTRAST}
           />
-          <Text style={styles.count}>
-            {itemsCount} {itemsCount > 1 ? 'Audios' : 'Audio'}
-          </Text>
         </View>
-      </View>
+
+        <View style={styles.contentContainer}>
+          <Text numberOfLines={1} style={styles.title}>
+            {title}
+          </Text>
+
+          <View style={styles.iconContainer}>
+            <FontAwesome
+              name={visibility === 'public' ? 'globe' : 'lock'}
+              size={14}
+              color={colors.SECONDARY}
+            />
+            <Text style={styles.count}>
+              {itemsCount} {itemsCount > 1 ? 'Audios' : 'Audio'}
+            </Text>
+          </View>
+        </View>
+      </Animated.View>
     </Pressable>
   );
 };
@@ -67,21 +82,21 @@ const styles = StyleSheet.create({
   count: {
     color: colors.SECONDARY,
     fontSize: 13,
-    fontWeight: 'bold',
+    fontWeight: '500',
     textTransform: 'capitalize',
     marginLeft: 10,
   },
   posterContainer: {
-    aspectRatio: 1,
-    height: 50,
-    borderRadius: 5,
+    height: 52,
+    width: 52,
+    borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.OVERLAY,
+    backgroundColor: 'rgba(255,255,255,0.06)',
   },
   title: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: colors.CONTRAST,
     textTransform: 'capitalize',
   },

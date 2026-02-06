@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import catchAsyncError from 'src/api/catchError';
 import { updateNotification } from 'src/store/notification';
-import { AudioData, Playlist } from 'src/@types/audio';
+import { AudioData, History, Playlist } from 'src/@types/audio';
 import { getClient } from 'src/api/client';
 
 const fetchLatest = async (): Promise<AudioData[]> => {
@@ -138,3 +138,31 @@ export const useFetchFavorite = () => {
   return query;
 };
 
+// ------------------------------------------------
+
+const fetchHistories = async (): Promise<History[]> => {
+  const client = await getClient({});
+  const { data } = await client.get('/history');
+  return data.histories;
+};
+
+export const useFetchHistories = () => {
+  const dispatch = useDispatch();
+
+  const query = useQuery({
+    queryKey: ['histories'],
+    queryFn: fetchHistories,
+    refetchOnWindowFocus: true,
+    refetchOnMount: 'always',
+    retry: 1,
+  });
+
+  useEffect(() => {
+    if (query.error) {
+      const errorMessage = catchAsyncError(query.error);
+      dispatch(updateNotification({ message: errorMessage, type: 'error' }));
+    }
+  }, [query.error, dispatch]);
+
+  return query;
+};

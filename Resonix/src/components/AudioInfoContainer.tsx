@@ -53,9 +53,9 @@ const AudioInfoContainer: FC<Props> = ({ visible, closeHandler }) => {
 
       <BlurView
         style={StyleSheet.absoluteFill}
-        blurType="dark" // "light" | "dark" | "xlight"
-        blurAmount={10} // 12–24 sweet spot
-        reducedTransparencyFallbackColor="rgba(0,0,0,0.85)"
+        blurType="xlight"
+        blurAmount={16}
+        reducedTransparencyFallbackColor="rgba(0,0,0,0.1)"
       />
       <Pressable
         onPress={() => closeHandler(false)}
