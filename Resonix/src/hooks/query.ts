@@ -166,3 +166,32 @@ export const useFetchHistories = () => {
 
   return query;
 };
+
+// ------------------------------------------------
+
+const fetchRecentlyPlayed = async (): Promise<AudioData[]> => {
+  const client = await getClient({});
+  const { data } = await client.get('/history/recently-played');
+  return data.audios;
+};
+
+export const useFetchRecentlyPlayed = () => {
+  const dispatch = useDispatch();
+
+  const query = useQuery({
+    queryKey: ['recently-played'],
+    queryFn: fetchRecentlyPlayed,
+    refetchOnWindowFocus: true,
+    refetchOnMount: 'always',
+    retry: 1,
+  });
+
+  useEffect(() => {
+    if (query.error) {
+      const errorMessage = catchAsyncError(query.error);
+      dispatch(updateNotification({ message: errorMessage, type: 'error' }));
+    }
+  }, [query.error, dispatch]);
+
+  return query;
+};

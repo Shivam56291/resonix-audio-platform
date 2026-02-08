@@ -2,6 +2,7 @@ import React, { FC, useEffect, useState } from 'react';
 import {
   DeviceEventEmitter,
   Pressable,
+  RefreshControl,
   SectionList,
   StyleSheet,
   Text,
@@ -14,6 +15,9 @@ import Animated, {
   FadeOutDown,
   LinearTransition,
   withTiming,
+  withSpring,
+  withSequence,
+  withDelay,
 } from 'react-native-reanimated';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -25,21 +29,43 @@ import AudioListLoadingUI from 'ui/AudioListLoadingUI';
 import colors from 'utils/colors';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { getClient } from 'api/client';
-import { HistoryAudio } from 'src/@types/audio';
+import { History, HistoryAudio } from 'src/@types/audio';
 import { useNavigation } from '@react-navigation/native';
 
 interface Props {}
 
 const HistoryTab: FC<Props> = () => {
-  const { data, isLoading } = useFetchHistories();
+  const { data, isLoading, isFetching } = useFetchHistories();
+  const [showHint, setShowHint] = useState(true);
   const queryClient = useQueryClient();
   const [selectedHistories, setSelectedHistories] = useState<string[]>([]);
   const navigation = useNavigation();
   const barTranslate = useSharedValue(-60);
   const barScale = useSharedValue(0.8);
+  const opacity = useSharedValue(0);
+  const translateY = useSharedValue(-10);
 
-  useMutation({
-    mutationFn: async () => {},
+  const removeMutate = useMutation({
+    mutationFn: async histories => removeHistories(histories),
+    onMutate: async (values: string[]) => {
+      queryClient.setQueryData<History[]>(['histories'], oldData => {
+        let newData: History[] = [];
+        if (!oldData) return newData;
+
+        for (let history of oldData) {
+          const filteredData = history.audios.filter(
+            audio => !values.includes(audio.id),
+          );
+          if (filteredData.length) {
+            newData.push({
+              date: history.date,
+              audios: filteredData,
+            });
+          }
+        }
+        return newData;
+      });
+    },
   });
 
   const removeHistories = async (histories: string[]) => {
@@ -49,7 +75,7 @@ const HistoryTab: FC<Props> = () => {
   };
 
   const handleSingleHistoryRemove = async (history: HistoryAudio) => {
-    await removeHistories([history.id]);
+    removeMutate.mutate([history.id]);
   };
 
   const handleOnLongPress = (history: HistoryAudio) => {
@@ -61,8 +87,12 @@ const HistoryTab: FC<Props> = () => {
     });
   };
 
+  const handleOnRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: ['histories'] });
+  };
+
   const handleMultipleHistoryRemove = async () => {
-    await removeHistories(selectedHistories);
+    removeMutate.mutate(selectedHistories);
     setSelectedHistories([]);
   };
 
@@ -71,6 +101,28 @@ const HistoryTab: FC<Props> = () => {
     barTranslate.value = withTiming(show ? 0 : -60, { duration: 150 });
     barScale.value = withTiming(show ? 1 : 0.8, { duration: 150 });
   }, [selectedHistories.length, barTranslate, barScale]);
+
+  useEffect(() => {
+    if (!showHint) return;
+
+    // Fade in
+    opacity.value = withTiming(1, { duration: 500 });
+
+    // Slight bounce
+    translateY.value = withSequence(
+      withTiming(5, { duration: 300 }),
+      withSpring(0),
+    );
+
+    // Fade out after 3 seconds
+    opacity.value = withDelay(2500, withTiming(0, { duration: 500 }));
+
+    const timer = setTimeout(() => {
+      setShowHint(false);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [showHint, opacity, translateY]);
 
   useEffect(() => {
     const sub = DeviceEventEmitter.addListener('HISTORY_UPDATED', () => {
@@ -98,14 +150,17 @@ const HistoryTab: FC<Props> = () => {
     opacity: barScale.value,
   }));
 
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: opacity.value,
+      transform: [{ translateY: translateY.value }],
+    };
+  });
+
   if (isLoading) return <AudioListLoadingUI />;
 
-  if (!data || !data[0]?.audios?.length) {
-    return <EmptyRecords title="There is no history!" />;
-  }
-
   return (
-    <>
+    <View style={{ flex: 1, position: 'relative' }}>
       {selectedHistories.length > 0 && (
         <Animated.View
           style={[
@@ -150,14 +205,59 @@ const HistoryTab: FC<Props> = () => {
         </Animated.View>
       )}
 
+      {showHint && (
+        <Animated.View
+          pointerEvents="none"
+          style={[
+            {
+              position: 'absolute',
+              top: 20,
+              alignSelf: 'center',
+              backgroundColor: 'rgba(28,28,30,0.95)',
+              paddingHorizontal: 16,
+              paddingVertical: 8,
+              borderRadius: 20,
+              zIndex: 100,
+            },
+            animatedStyle,
+          ]}
+        >
+          <Text style={{ color: '#fff', fontSize: 12, fontWeight: '500' }}>
+            ↓ Pull down to refresh
+          </Text>
+        </Animated.View>
+      )}
+
       <SectionList
-        sections={data.map(item => ({
-          title: item.date,
-          data: item.audios,
-        }))}
+        refreshControl={
+          <RefreshControl
+            refreshing={isFetching}
+            onRefresh={handleOnRefresh}
+            tintColor={colors.CONTRAST}
+            colors={[colors.CONTRAST]}
+            progressBackgroundColor="rgba(255,255,255,0.08)"
+            progressViewOffset={60}
+          />
+        }
+        sections={
+          data?.length
+            ? data.map(item => ({
+                title: item.date,
+                data: item.audios,
+              }))
+            : []
+        }
         keyExtractor={item => item.id}
         stickySectionHeadersEnabled={false}
-        contentContainerStyle={styles.container}
+        contentContainerStyle={[
+          styles.container,
+          !data?.length && { flexGrow: 1 }, // 🔥 IMPORTANT
+        ]}
+        ListEmptyComponent={
+          <View style={{ flex: 1, justifyContent: 'center' }}>
+            <EmptyRecords title="There is no history!" />
+          </View>
+        }
         renderSectionHeader={({ section }) => (
           <View style={styles.sectionHeader}>
             <Fontisto name="date" color={colors.SECONDARY} size={18} />
@@ -166,7 +266,6 @@ const HistoryTab: FC<Props> = () => {
         )}
         renderItem={({ item, index }) => {
           const isSelected = selectedHistories.includes(item.id);
-          
 
           return (
             <Pressable
@@ -210,7 +309,7 @@ const HistoryTab: FC<Props> = () => {
           );
         }}
       />
-    </>
+    </View>
   );
 };
 

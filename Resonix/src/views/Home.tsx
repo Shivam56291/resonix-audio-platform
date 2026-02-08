@@ -22,6 +22,7 @@ import PlaylistForm, { PlaylistInfo } from 'components/PlaylistForm';
 import { useFetchPlaylist } from 'hooks/query';
 import useAudioController from 'hooks/useAudioController';
 import AppView from '@components/AppView';
+// import RecentlyPlayed from 'components/RecentlyPlayed';
 
 interface Props {}
 
@@ -131,6 +132,10 @@ const Home: FC<Props> = () => {
   return (
     <AppView>
       <ScrollView contentContainerStyle={styles.container}>
+        {/* <RecentlyPlayed
+          onAudioPress={onAudioPress}
+          onAudioLongPress={handleOnLongPress}
+        /> */}
         <LatestUploads
           onAudioPress={onAudioPress}
           onAudioLongPress={handleOnLongPress}
