@@ -11,6 +11,7 @@ import HistoryTab from '@components/profile/HistoryTab';
 import colors from '@utils/colors';
 import ProfileContainer from '@components/ProfileContainer';
 import AnimatedTabScreenWrapper from 'ui/AnimatedTabScreenWrapper';
+import AppView from 'components/AppView';
 
 interface Props {}
 
@@ -20,48 +21,50 @@ const Profile: FC<Props> = () => {
   const { profile } = useSelector(getAuthState);
 
   return (
-    <View style={styles.container}>
-      <ProfileContainer profile={profile} />
-      <Tab.Navigator
-        screenOptions={{
-          tabBarStyle: styles.tabBarStyles,
-          tabBarLabelStyle: styles.tabBarLabelStyle,
-          tabBarIndicatorStyle: { backgroundColor: colors.SECONDARY },
-        }}
-      >
-        <Tab.Screen name="Uploads">
-          {() => (
-            <AnimatedTabScreenWrapper>
-              <UploadTab />
-            </AnimatedTabScreenWrapper>
-          )}
-        </Tab.Screen>
+    <AppView>
+      <View style={styles.container}>
+        <ProfileContainer profile={profile} />
+        <Tab.Navigator
+          screenOptions={{
+            tabBarStyle: styles.tabBarStyles,
+            tabBarLabelStyle: styles.tabBarLabelStyle,
+            tabBarIndicatorStyle: { backgroundColor: colors.SECONDARY },
+          }}
+        >
+          <Tab.Screen name="Uploads">
+            {() => (
+              <AnimatedTabScreenWrapper>
+                <UploadTab />
+              </AnimatedTabScreenWrapper>
+            )}
+          </Tab.Screen>
 
-        <Tab.Screen name="Playlists">
-          {() => (
-            <AnimatedTabScreenWrapper>
-              <PlaylistTab />
-            </AnimatedTabScreenWrapper>
-          )}
-        </Tab.Screen>
+          <Tab.Screen name="Playlists">
+            {() => (
+              <AnimatedTabScreenWrapper>
+                <PlaylistTab />
+              </AnimatedTabScreenWrapper>
+            )}
+          </Tab.Screen>
 
-        <Tab.Screen name="Favourites">
-          {() => (
-            <AnimatedTabScreenWrapper>
-              <FavoriteTab />
-            </AnimatedTabScreenWrapper>
-          )}
-        </Tab.Screen>
+          <Tab.Screen name="Favourites">
+            {() => (
+              <AnimatedTabScreenWrapper>
+                <FavoriteTab />
+              </AnimatedTabScreenWrapper>
+            )}
+          </Tab.Screen>
 
-        <Tab.Screen name="History">
-          {() => (
-            <AnimatedTabScreenWrapper>
-              <HistoryTab />
-            </AnimatedTabScreenWrapper>
-          )}
-        </Tab.Screen>
-      </Tab.Navigator>
-    </View>
+          <Tab.Screen name="History">
+            {() => (
+              <AnimatedTabScreenWrapper>
+                <HistoryTab />
+              </AnimatedTabScreenWrapper>
+            )}
+          </Tab.Screen>
+        </Tab.Navigator>
+      </View>
+    </AppView>
   );
 };
 

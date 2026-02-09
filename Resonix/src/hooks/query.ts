@@ -110,7 +110,6 @@ export const useFetchUploadsByProfile = () => {
   return query;
 };
 
-
 // -----------------------------------------------
 
 const fetchFavorites = async (): Promise<AudioData[]> => {
@@ -172,7 +171,9 @@ export const useFetchHistories = () => {
 const fetchRecentlyPlayed = async (): Promise<AudioData[]> => {
   const client = await getClient({});
   const { data } = await client.get('/history/recently-played');
-  return data.audios;
+
+  console.log(data);
+  return data.recentlyPlayed ?? [];
 };
 
 export const useFetchRecentlyPlayed = () => {
@@ -181,6 +182,37 @@ export const useFetchRecentlyPlayed = () => {
   const query = useQuery({
     queryKey: ['recently-played'],
     queryFn: fetchRecentlyPlayed,
+    refetchOnWindowFocus: true,
+    refetchOnMount: 'always',
+    retry: 1,
+  });
+
+  useEffect(() => {
+    if (query.error) {
+      const errorMessage = catchAsyncError(query.error);
+      dispatch(updateNotification({ message: errorMessage, type: 'error' }));
+    }
+  }, [query.error, dispatch]);
+
+  return query;
+};
+
+// ------------------------------------------------
+
+const fetchRecommendedPlaylist = async (): Promise<Playlist[]> => {
+  const client = await getClient({});
+  const { data } = await client.get('/profile/auto-generated-playlist');
+
+  console.log(data);
+  return data.playlists ?? [];
+};
+
+export const useFetchRecommendedPlaylist = () => {
+  const dispatch = useDispatch();
+
+  const query = useQuery({
+    queryKey: ['recommended-playlist'],
+    queryFn: fetchRecommendedPlaylist,
     refetchOnWindowFocus: true,
     refetchOnMount: 'always',
     retry: 1,

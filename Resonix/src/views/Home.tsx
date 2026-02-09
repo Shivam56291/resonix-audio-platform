@@ -22,7 +22,8 @@ import PlaylistForm, { PlaylistInfo } from 'components/PlaylistForm';
 import { useFetchPlaylist } from 'hooks/query';
 import useAudioController from 'hooks/useAudioController';
 import AppView from '@components/AppView';
-// import RecentlyPlayed from 'components/RecentlyPlayed';
+import RecentlyPlayed from 'components/RecentlyPlayed';
+import RecommendedPlaylist from 'components/RecommendedPlaylist';
 
 interface Props {}
 
@@ -132,10 +133,8 @@ const Home: FC<Props> = () => {
   return (
     <AppView>
       <ScrollView contentContainerStyle={styles.container}>
-        {/* <RecentlyPlayed
-          onAudioPress={onAudioPress}
-          onAudioLongPress={handleOnLongPress}
-        /> */}
+        <RecentlyPlayed
+        />
         <LatestUploads
           onAudioPress={onAudioPress}
           onAudioLongPress={handleOnLongPress}
@@ -147,6 +146,9 @@ const Home: FC<Props> = () => {
           onAudioPress={onAudioPress}
           onAudioLongPress={handleOnLongPress}
         />
+
+        <RecommendedPlaylist />
+
         <OptionsModal
           visible={showOptions}
           onRequestClose={() => setShowOptions(false)}

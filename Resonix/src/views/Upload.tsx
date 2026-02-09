@@ -24,6 +24,7 @@ import { mapRange } from '@utils/math';
 import { updateNotification } from 'src/store/notification';
 import catchAsyncError from 'src/api/catchError';
 import { BlurView } from '@react-native-community/blur';
+import AppView from 'components/AppView';
 
 interface FormFields {
   title: string;
@@ -43,7 +44,11 @@ const defaultForm: FormFields = {
 
 const audioInfoSchema = yup.object({
   title: yup.string().trim().required('Title is required'),
-  category: yup.string().oneOf(categories, 'Category is missing'),
+  category: yup
+    .string()
+    .oneOf(categories, 'Category is missing')
+    .required('Category is required'),
+
   about: yup.string().trim().required('About is required'),
   file: yup
     .object()
@@ -137,112 +142,114 @@ const Upload: FC<Props> = () => {
   };
 
   return (
-    <View style={{ flex: 1, position: 'relative' }}>
-      <ScrollView
-        style={styles.container}
-        scrollEnabled={!busy}
-        keyboardShouldPersistTaps="handled"
-      >
-        <View style={styles.fileSelectorContainer}>
-          <FileSelector
-            icon={
-              <MaterialCommunityIcons
-                name="image-outline"
-                size={35}
-                color={colors.SECONDARY}
-              />
-            }
-            title="Select Poster"
-            options={{
-              type: [DocumentPicker.types.images],
-            }}
-            onSelect={files => {
-              setAudioInfo({ ...audioInfo, poster: files });
-            }}
-            file={audioInfo.poster}
-          />
-          <FileSelector
-            icon={
-              <MaterialCommunityIcons
-                name="file-music-outline"
-                size={35}
-                color={colors.SECONDARY}
-              />
-            }
-            title="Select Audio"
-            options={{
-              type: [DocumentPicker.types.audio],
-            }}
-            onSelect={files => {
-              setAudioInfo({ ...audioInfo, file: files });
-            }}
-            file={audioInfo.file}
-          />
-        </View>
-        <View style={styles.formContainer}>
-          <TextInput
-            placeholder="Title"
-            placeholderTextColor={colors.INACTIVE_CONTRAST}
-            style={[styles.input, { marginBottom: 10 }]}
-            onChangeText={title => setAudioInfo({ ...audioInfo, title })}
-            value={audioInfo.title}
-          />
+    <AppView>
+      <View style={{ flex: 1, position: 'relative' }}>
+        <ScrollView
+          style={styles.container}
+          scrollEnabled={!busy}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.fileSelectorContainer}>
+            <FileSelector
+              icon={
+                <MaterialCommunityIcons
+                  name="image-outline"
+                  size={35}
+                  color={colors.SECONDARY}
+                />
+              }
+              title="Select Poster"
+              options={{
+                type: [DocumentPicker.types.images],
+              }}
+              onSelect={files => {
+                setAudioInfo({ ...audioInfo, poster: files });
+              }}
+              file={audioInfo.poster}
+            />
+            <FileSelector
+              icon={
+                <MaterialCommunityIcons
+                  name="file-music-outline"
+                  size={35}
+                  color={colors.SECONDARY}
+                />
+              }
+              title="Select Audio"
+              options={{
+                type: [DocumentPicker.types.audio],
+              }}
+              onSelect={files => {
+                setAudioInfo({ ...audioInfo, file: files });
+              }}
+              file={audioInfo.file}
+            />
+          </View>
+          <View style={styles.formContainer}>
+            <TextInput
+              placeholder="Title"
+              placeholderTextColor={colors.INACTIVE_CONTRAST}
+              style={[styles.input, { marginBottom: 10 }]}
+              onChangeText={title => setAudioInfo({ ...audioInfo, title })}
+              value={audioInfo.title}
+            />
 
-          <Pressable
-            onPress={() => setShowCategoryModal(true)}
-            style={({ pressed }) => [
-              styles.categorySelector,
-              pressed && { opacity: 0.6 },
-            ]}
-          >
-            <Text style={styles.categorySelectorTitle}>Category</Text>
-            <Text style={styles.selectedCategory}>
-              {audioInfo.category || 'Select Category'}
-            </Text>
-          </Pressable>
+            <Pressable
+              onPress={() => setShowCategoryModal(true)}
+              style={({ pressed }) => [
+                styles.categorySelector,
+                pressed && { opacity: 0.6 },
+              ]}
+            >
+              <Text style={styles.categorySelectorTitle}>Category</Text>
+              <Text style={styles.selectedCategory}>
+                {audioInfo.category || 'Select Category'}
+              </Text>
+            </Pressable>
 
-          <TextInput
-            placeholder="About"
-            placeholderTextColor={colors.INACTIVE_CONTRAST}
-            style={[styles.input, { marginTop: 10 }]}
-            multiline
-            numberOfLines={5}
-            onChangeText={about => setAudioInfo({ ...audioInfo, about })}
-            value={audioInfo.about}
-          />
+            <TextInput
+              placeholder="About"
+              placeholderTextColor={colors.INACTIVE_CONTRAST}
+              style={[styles.input, { marginTop: 10 }]}
+              multiline
+              numberOfLines={5}
+              onChangeText={about => setAudioInfo({ ...audioInfo, about })}
+              value={audioInfo.about}
+            />
 
-          <CategorySelector
-            visible={showCategoryModal}
-            title="Category"
-            data={categories}
-            renderItem={item => <Text style={styles.category}>{item}</Text>}
-            onSelect={item => setAudioInfo({ ...audioInfo, category: item })}
-            onRequestClose={() => setShowCategoryModal(false)}
-          />
+            <CategorySelector
+              visible={showCategoryModal}
+              title="Category"
+              data={categories}
+              renderItem={item => <Text style={styles.category}>{item}</Text>}
+              onSelect={item => setAudioInfo({ ...audioInfo, category: item })}
+              onRequestClose={() => setShowCategoryModal(false)}
+            />
 
-          <View style={{ height: 50 }} />
+            <View style={{ height: 50 }} />
 
-          <AppButton
-            busy={busy}
-            title="Upload"
-            borderRadius={7}
-            onPress={handleUpload}
-          />
-        </View>
-      </ScrollView>
+            <AppButton
+              busy={busy}
+              title="Upload"
+              borderRadius={7}
+              onPress={handleUpload}
+            />
+          </View>
+        </ScrollView>
 
-      {busy && (
-        <View style={styles.globalOverlay}>
-          <BlurView
-            style={StyleSheet.absoluteFill}
-            blurType="dark"
-            blurAmount={10}
-            reducedTransparencyFallbackColor="rgba(0,0,0,0.35)"
-          />
-          <Progress progress={uploadProgress} />
-        </View>
-      )}
-    </View>
+        {busy && (
+          <View style={styles.globalOverlay}>
+            <BlurView
+              style={StyleSheet.absoluteFill}
+              blurType="dark"
+              blurAmount={10}
+              reducedTransparencyFallbackColor="rgba(0,0,0,0.35)"
+            />
+            <Progress progress={uploadProgress} />
+          </View>
+        )}
+      </View>
+    </AppView>
   );
 };
 
