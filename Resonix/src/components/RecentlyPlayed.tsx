@@ -6,15 +6,18 @@ import { View, StyleSheet, Text } from 'react-native';
 
 import { useFetchRecentlyPlayed } from 'src/hooks/query';
 import PulseAnimationContainer from 'ui/PulseAnimationContainer';
+import useAudioController from 'hooks/useAudioController';
+import { useSelector } from 'react-redux';
+import { getPlayerState } from 'store/player';
 
-interface Props {
-  onAudioPress?: (audio: AudioData) => void;
-}
+interface Props {}
 
 const dummyData = Array.from({ length: 4 });
 
 const RecentlyPlayed: FC<Props> = () => {
-  const { data, isLoading } = useFetchRecentlyPlayed();
+  const { data = [], isLoading } = useFetchRecentlyPlayed();
+  const { onGoingAudio } = useSelector(getPlayerState);
+  const { onAudioPress } = useAudioController();
 
   if (isLoading) {
     return (
@@ -24,9 +27,7 @@ const RecentlyPlayed: FC<Props> = () => {
           <GridView
             data={dummyData}
             renderItem={() => {
-              return (
-                <View style={styles.dummyItemView} />
-              );
+              return <View style={styles.dummyItemView} />;
             }}
           />
         </View>
@@ -38,14 +39,15 @@ const RecentlyPlayed: FC<Props> = () => {
     <View style={styles.container}>
       <Text style={styles.title}>Recently Played</Text>
       <GridView
-        data={data || []}
+        data={data}
         renderItem={item => {
           return (
             <View key={item.id} style={styles.listStyle}>
               <RecentlyPlayedCard
                 title={item.title}
                 poster={item.poster}
-                onPress={() => {}}
+                onPress={() => onAudioPress(item, data)}
+                isPlaying={item.id === onGoingAudio?.id}
               />
             </View>
           );
@@ -59,9 +61,15 @@ const styles = StyleSheet.create({
   container: {},
   title: {
     color: colors.CONTRAST,
-    fontSize: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.SECONDARY,
+    letterSpacing: 0.3,
     fontWeight: 'bold',
+    fontSize: 20,
+    marginTop: 5,
     marginBottom: 15,
+    alignSelf: 'flex-start',
+    marginLeft: 22,
   },
   listStyle: {
     marginBottom: 10,

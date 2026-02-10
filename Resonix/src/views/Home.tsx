@@ -1,11 +1,5 @@
 import { FC, useState } from 'react';
-import {
-  View,
-  StyleSheet,
-  Text,
-  Pressable,
-  ScrollView,
-} from 'react-native';
+import { View, StyleSheet, Text, Pressable, ScrollView } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useDispatch } from 'react-redux';
 
@@ -133,8 +127,10 @@ const Home: FC<Props> = () => {
   return (
     <AppView>
       <ScrollView contentContainerStyle={styles.container}>
-        <RecentlyPlayed
-        />
+        <RecentlyPlayed />
+
+        <View style={styles.sectionDivider} />
+
         <LatestUploads
           onAudioPress={onAudioPress}
           onAudioLongPress={handleOnLongPress}
@@ -146,6 +142,8 @@ const Home: FC<Props> = () => {
           onAudioPress={onAudioPress}
           onAudioLongPress={handleOnLongPress}
         />
+
+        <View style={styles.sectionDivider} />
 
         <RecommendedPlaylist />
 
@@ -213,7 +211,7 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: colors.OVERLAY,
     marginHorizontal: 12,
-    marginVertical: 15,
+    marginVertical: 5,
   },
 });
 

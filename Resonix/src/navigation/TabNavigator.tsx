@@ -42,7 +42,6 @@ const AnimatedTabIcon = ({ focused, children }: any) => {
 
   return (
     <Animated.View style={{ alignItems: 'center', justifyContent: 'center' }}>
-      {/* 🎯 Background pill */}
       <Animated.View
         style={[
           {
@@ -56,7 +55,6 @@ const AnimatedTabIcon = ({ focused, children }: any) => {
         ]}
       />
 
-      {/* Icon */}
       <Animated.View style={style}>{children}</Animated.View>
     </Animated.View>
   );

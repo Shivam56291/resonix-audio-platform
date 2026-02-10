@@ -203,8 +203,8 @@ const fetchRecommendedPlaylist = async (): Promise<Playlist[]> => {
   const client = await getClient({});
   const { data } = await client.get('/profile/auto-generated-playlist');
 
-  console.log(data);
-  return data.playlists ?? [];
+  console.log('query : ', data);
+  return data.playlist ?? [];
 };
 
 export const useFetchRecommendedPlaylist = () => {
