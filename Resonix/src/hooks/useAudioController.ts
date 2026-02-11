@@ -49,10 +49,10 @@ const useAudioController = () => {
   const onAudioPress = async (item: AudioData, data: AudioData[]) => {
     if (!isPlayerReady) {
       await updateQueue(data);
+      dispatch(updateOnGoingAudio(item));
       const index = data.findIndex(audio => audio.id === item.id);
       await TrackPlayer.skip(index);
       await TrackPlayer.play();
-      dispatch(updateOnGoingAudio(item));
       return dispatch(updateOnGoingList(data));
     }
 
@@ -128,7 +128,7 @@ const useAudioController = () => {
     try {
       await TrackPlayer.skipToNext();
 
-      await TrackPlayer.play()
+      await TrackPlayer.play();
 
       setTimeout(async () => {
         const activeTrack = await TrackPlayer.getActiveTrack();

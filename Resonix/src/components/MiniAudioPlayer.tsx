@@ -22,6 +22,9 @@ import { mapRange } from '@utils/math';
 import Loader from '@ui/Loader';
 import AudioPlayer from './AudioPlayer';
 import CurrentAudioList from './CurrentAudioList';
+import { useFetchIsFavorite } from 'hooks/query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { getClient } from 'api/client';
 
 interface Props {}
 
@@ -37,6 +40,8 @@ const MiniAudiPlayer: FC<Props> = () => {
   const [displayedAudio, setDisplayedAudio] = useState(onGoingAudio);
   const [showCurrentList, setShowCurrentList] = useState(false);
 
+  const { data: isFav } = useFetchIsFavorite(onGoingAudio?.id || '');
+
   const translateY = useSharedValue(0);
   const opacity = useSharedValue(1);
   const scale = useSharedValue(1);
@@ -51,8 +56,44 @@ const MiniAudiPlayer: FC<Props> = () => {
   }));
 
   const fadeAnim = useSharedValue(0);
-
   const rotation = useSharedValue(0);
+
+  const queryClient = useQueryClient();
+
+  const toggleIsFav = async (id: string) => {
+    if (!id) return;
+    const client = await getClient();
+    await client.post('/favorite?audioId=' + id);
+  };
+
+  const favoriteMutate = useMutation<
+    void,
+    unknown,
+    string,
+    { previous?: boolean }
+  >({
+    mutationFn: async (id: string) => toggleIsFav(id),
+
+    onMutate: async (id: string) => {
+      await queryClient.cancelQueries({ queryKey: ['is-favorite', id] });
+
+      const previous = queryClient.getQueryData<boolean>(['is-favorite', id]);
+
+      queryClient.setQueryData<boolean>(['is-favorite', id], old => !old);
+
+      return { previous };
+    },
+
+    onError: (_err, id, context) => {
+      if (context?.previous !== undefined) {
+        queryClient.setQueryData(['is-favorite', id], context.previous);
+      }
+    },
+
+    onSettled: (_data, _error, id) => {
+      queryClient.invalidateQueries({ queryKey: ['is-favorite', id] });
+    },
+  });
 
   const posterAnimatedStyle = useAnimatedStyle(() => ({
     transform: [
@@ -177,7 +218,7 @@ const MiniAudiPlayer: FC<Props> = () => {
   const source = displayedAudio?.poster
     ? { uri: displayedAudio.poster }
     : require('../../assets/music.png');
-  
+
   const handleOnCurrentListClose = () => {
     setShowCurrentList(false);
   };
@@ -210,7 +251,6 @@ const MiniAudiPlayer: FC<Props> = () => {
         <Animated.Image
           source={source}
           onLoad={() => {
-
             fadeAnim.value = withTiming(1, { duration: 220 });
 
             posterScale.value = withSpring(1, {
@@ -249,9 +289,15 @@ const MiniAudiPlayer: FC<Props> = () => {
           </Animated.View>
         </AnimatedPressable>
 
-        <Pressable style={styles.iconButton}>
+        <Pressable
+          style={({ pressed }) => [
+            styles.iconButton,
+            pressed && styles.pressed,
+          ]}
+          onPress={() => favoriteMutate.mutate(onGoingAudio?.id || '')}
+        >
           <MaterialIcons
-            name="favorite-outline"
+            name={isFav ? 'favorite' : 'favorite-outline'}
             size={24}
             color={colors.CONTRAST}
           />
@@ -271,9 +317,16 @@ const MiniAudiPlayer: FC<Props> = () => {
         )}
       </Animated.View>
 
-      <AudioPlayer visible={playerVisibility} onCloseComplete={onModalClosed} onListOptionPress={handleOnListOptionPress} />
+      <AudioPlayer
+        visible={playerVisibility}
+        onCloseComplete={onModalClosed}
+        onListOptionPress={handleOnListOptionPress}
+      />
 
-      <CurrentAudioList visible={showCurrentList} onRequestClose={handleOnCurrentListClose}/>
+      <CurrentAudioList
+        visible={showCurrentList}
+        onRequestClose={handleOnCurrentListClose}
+      />
     </>
   );
 };
@@ -320,6 +373,10 @@ const styles = StyleSheet.create({
   },
   iconButton: {
     paddingHorizontal: 10,
+  },
+  pressed: {
+    transform: [{ scale: 0.95 }],
+    opacity: 0.8,
   },
 });
 

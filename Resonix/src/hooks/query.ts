@@ -203,7 +203,6 @@ const fetchRecommendedPlaylist = async (): Promise<Playlist[]> => {
   const client = await getClient({});
   const { data } = await client.get('/profile/auto-generated-playlist');
 
-  console.log('query : ', data);
   return data.playlist ?? [];
 };
 
@@ -216,6 +215,37 @@ export const useFetchRecommendedPlaylist = () => {
     refetchOnWindowFocus: true,
     refetchOnMount: 'always',
     retry: 1,
+  });
+
+  useEffect(() => {
+    if (query.error) {
+      const errorMessage = catchAsyncError(query.error);
+      dispatch(updateNotification({ message: errorMessage, type: 'error' }));
+    }
+  }, [query.error, dispatch]);
+
+  return query;
+};
+
+// ------------------------------------------------
+
+const fetchIsFavorite = async (id: string): Promise<boolean> => {
+  const client = await getClient({});
+  const { data } = await client.get(`/favorite/is-fav?audioId=${id}`);
+
+  return data.result ?? false;
+};
+
+export const useFetchIsFavorite = (id: string) => {
+  const dispatch = useDispatch();
+
+  const query = useQuery({
+    queryKey: ['is-favorite', id],
+    queryFn: () => fetchIsFavorite(id),
+    refetchOnWindowFocus: true,
+    refetchOnMount: 'always',
+    retry: 1,
+    enabled: !!id,
   });
 
   useEffect(() => {

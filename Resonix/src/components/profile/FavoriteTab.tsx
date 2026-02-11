@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { ScrollView } from 'react-native';
+import { RefreshControl, ScrollView } from 'react-native';
 import { useFetchFavorite } from 'src/hooks/query';
 import AudioListItem from '@ui/AudioListItem';
 import AudioListLoadingUI from '@ui/AudioListLoadingUI';
@@ -11,7 +11,7 @@ import useAudioController from 'hooks/useAudioController';
 interface Props {}
 
 const FavoriteTab: FC<Props> = () => {
-  const { data = [], isLoading } = useFetchFavorite();
+  const { data = [], isLoading, isFetching } = useFetchFavorite();
   const { onGoingAudio } = useSelector(getPlayerState);
   const { onAudioPress } = useAudioController();
 
@@ -20,7 +20,11 @@ const FavoriteTab: FC<Props> = () => {
   }
 
   return (
-    <ScrollView>
+    <ScrollView
+      refreshControl={
+        <RefreshControl refreshing={isFetching} onRefresh={() => {}} />
+      }
+    >
       {data.length > 0 ? (
         data.map(audio => (
           <AudioListItem
