@@ -7,6 +7,8 @@ import EmptyRecords from '@ui/EmptyRecords';
 import { useSelector } from 'react-redux';
 import { getPlayerState } from 'store/player';
 import useAudioController from 'hooks/useAudioController';
+import colors from 'utils/colors';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface Props {}
 
@@ -14,6 +16,11 @@ const FavoriteTab: FC<Props> = () => {
   const { data = [], isLoading, isFetching } = useFetchFavorite();
   const { onGoingAudio } = useSelector(getPlayerState);
   const { onAudioPress } = useAudioController();
+  const queryClient = useQueryClient();
+
+  const handleOnRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: ['favorites'] });
+  };
 
   if (isLoading) {
     return <AudioListLoadingUI items={data.length || 11} />;
@@ -22,7 +29,14 @@ const FavoriteTab: FC<Props> = () => {
   return (
     <ScrollView
       refreshControl={
-        <RefreshControl refreshing={isFetching} onRefresh={() => {}} />
+        <RefreshControl
+          refreshing={isFetching}
+          onRefresh={handleOnRefresh}
+          tintColor={colors.CONTRAST}
+          colors={[colors.CONTRAST]}
+          progressBackgroundColor="rgba(255,255,255,0.08)"
+          progressViewOffset={60}
+        />
       }
     >
       {data.length > 0 ? (

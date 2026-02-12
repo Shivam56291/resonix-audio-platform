@@ -7,13 +7,13 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 
-import Home from '@views/Home';
 import Upload from '@views/Upload';
 import colors from '@utils/colors';
 import ScreenFadeWrapper from '@ui/ScreenFadeWrapper';
 import ProfileNavigator from './ProfileNavigator';
 import { hapticLight } from 'utils/haptics';
 import { Pressable } from 'react-native';
+import HomeNavigator from './HomeNavigator';
 
 const AnimatedTabIcon = ({ focused, children }: any) => {
   const style = useAnimatedStyle(() => ({
@@ -115,12 +115,12 @@ const TabNavigator = () => {
       }}
     >
       <Tab.Screen
-        name="HomeScreen"
+        name="HomeNavigator"
         options={{ tabBarIcon: HomeTabIcon, title: 'Home' }}
       >
         {() => (
           <ScreenFadeWrapper>
-            <Home />
+            <HomeNavigator />
           </ScreenFadeWrapper>
         )}
       </Tab.Screen>

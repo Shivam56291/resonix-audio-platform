@@ -25,6 +25,8 @@ import CurrentAudioList from './CurrentAudioList';
 import { useFetchIsFavorite } from 'hooks/query';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { getClient } from 'api/client';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { TabParamList } from 'src/@types/navigation';
 
 interface Props {}
 
@@ -49,6 +51,8 @@ const MiniAudiPlayer: FC<Props> = () => {
   const posterScale = useSharedValue(0.85);
   const textOpacity = useSharedValue(1);
   const textTranslateY = useSharedValue(0);
+
+  const { navigate } = useNavigation<NavigationProp<TabParamList>>();
 
   const miniPlayerStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }, { scale: scale.value }],
@@ -91,7 +95,13 @@ const MiniAudiPlayer: FC<Props> = () => {
     },
 
     onSettled: (_data, _error, id) => {
-      queryClient.invalidateQueries({ queryKey: ['is-favorite', id] });
+      queryClient.invalidateQueries({
+        queryKey: ['is-favorite', id],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ['favorites'],
+      });
     },
   });
 
@@ -228,6 +238,16 @@ const MiniAudiPlayer: FC<Props> = () => {
     setShowCurrentList(true);
   };
 
+  const handleOnProfileLinkPress = () => {
+    closePlayerModal();
+    navigate('HomeNavigator', {
+      screen: 'PublicProfile',
+      params: {
+        profileId: onGoingAudio?.owner?.id ?? '',
+      },
+    });
+  };
+
   return (
     <>
       <Animated.View style={[styles.progressContainer, progressStyle]}>
@@ -321,6 +341,7 @@ const MiniAudiPlayer: FC<Props> = () => {
         visible={playerVisibility}
         onCloseComplete={onModalClosed}
         onListOptionPress={handleOnListOptionPress}
+        onProfileLinkPress={handleOnProfileLinkPress}
       />
 
       <CurrentAudioList

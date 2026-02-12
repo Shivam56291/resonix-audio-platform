@@ -1,3 +1,12 @@
+import { NavigatorScreenParams } from '@react-navigation/native';
+
+export type TabParamList = {
+  HomeNavigator: NavigatorScreenParams<HomeNavigatorStackParamList>;
+  ProfileScreen: undefined;
+  UploadScreen: undefined;
+};
+
+
 interface NewUserResponse {
   user: string;
   name: string;
@@ -15,4 +24,9 @@ export type ProfileNavigatorStackParamList = {
   Profile: undefined;
   ProfileSettings: undefined;
   Verification: { userInfo: NewUserResponse; redirectTo: 'ProfileSettings' };
+};
+
+export type HomeNavigatorStackParamList = {
+  Home: undefined;
+  PublicProfile: { profileId: string };
 };

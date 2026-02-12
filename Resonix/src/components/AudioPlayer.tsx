@@ -31,6 +31,7 @@ interface Props {
   visible: boolean;
   onCloseComplete: () => void;
   onListOptionPress?: () => void;
+  onProfileLinkPress?: () => void;
 }
 
 interface ExtendedSliderProps extends SliderProps {
@@ -45,6 +46,7 @@ const AudioPlayer: FC<Props> = ({
   visible,
   onCloseComplete,
   onListOptionPress,
+  onProfileLinkPress,
 }) => {
   const [showAudioInfo, setShowAudioInfo] = useState(false);
   const { duration, position } = useProgress();
@@ -136,7 +138,7 @@ const AudioPlayer: FC<Props> = ({
           <Text style={styles.title}>{onGoingAudio?.title}</Text>
           <AppLink
             title={onGoingAudio?.owner.name || 'Unknown Artist'}
-            onPress={() => {}}
+            onPress={onProfileLinkPress}
           />
           <View style={styles.durationContainer}>
             <Text style={styles.duration}>
