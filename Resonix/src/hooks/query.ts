@@ -6,6 +6,7 @@ import catchAsyncError from 'src/api/catchError';
 import { updateNotification } from 'src/store/notification';
 import { AudioData, History, Playlist } from 'src/@types/audio';
 import { getClient } from 'src/api/client';
+import { PublicProfile } from 'src/@types/user';
 
 const fetchLatest = async (): Promise<AudioData[]> => {
   const client = await getClient({});
@@ -242,6 +243,38 @@ export const useFetchIsFavorite = (id: string) => {
   const query = useQuery({
     queryKey: ['is-favorite', id],
     queryFn: () => fetchIsFavorite(id),
+    refetchOnWindowFocus: true,
+    refetchOnMount: 'always',
+    retry: 1,
+    enabled: !!id,
+  });
+
+  useEffect(() => {
+    if (query.error) {
+      const errorMessage = catchAsyncError(query.error);
+      dispatch(updateNotification({ message: errorMessage, type: 'error' }));
+    }
+  }, [query.error, dispatch]);
+
+  return query;
+};
+
+
+// ------------------------------------------------
+
+const fetchPublicProfile = async (id: string): Promise<PublicProfile> => {
+  const client = await getClient({});
+  const { data } = await client.get(`/profile/info/${id}`);
+
+  return data.profile ?? {};
+};
+
+export const useFetchPublicProfile = (id: string) => {
+  const dispatch = useDispatch();
+
+  const query = useQuery({
+    queryKey: ['profile', id],
+    queryFn: () => fetchPublicProfile(id),
     refetchOnWindowFocus: true,
     refetchOnMount: 'always',
     retry: 1,

@@ -67,13 +67,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 20,
     marginTop: 5,
-    marginBottom: 15,
     alignSelf: 'flex-start',
     marginLeft: 22,
   },
-  listStyle: {
-    marginBottom: 10,
-  },
+  listStyle: {},
   dummyTitleView: {
     marginLeft: 18,
     height: 20,
