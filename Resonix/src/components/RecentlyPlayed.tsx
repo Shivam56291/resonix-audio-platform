@@ -19,6 +19,10 @@ const RecentlyPlayed: FC<Props> = () => {
   const { onGoingAudio } = useSelector(getPlayerState);
   const { onAudioPress } = useAudioController();
 
+  const uniqueData = Array.from(
+    new Map(data.map(item => [item.id, item])).values(),
+  );
+
   if (isLoading) {
     return (
       <PulseAnimationContainer>
@@ -39,14 +43,14 @@ const RecentlyPlayed: FC<Props> = () => {
     <View style={styles.container}>
       <Text style={styles.title}>Recently Played</Text>
       <GridView
-        data={data}
+        data={uniqueData}
         renderItem={item => {
           return (
             <View key={item.id} style={styles.listStyle}>
               <RecentlyPlayedCard
                 title={item.title}
                 poster={item.poster}
-                onPress={() => onAudioPress(item, data)}
+                onPress={() => onAudioPress(item, uniqueData)}
                 isPlaying={item.id === onGoingAudio?.id}
               />
             </View>

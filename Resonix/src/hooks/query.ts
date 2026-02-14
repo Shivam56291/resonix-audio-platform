@@ -290,3 +290,35 @@ export const useFetchPublicProfile = (id: string) => {
 
   return query;
 };
+
+
+// ------------------------------------------------
+
+const fetchPublicUploads = async (id: string): Promise<AudioData[]> => {
+  const client = await getClient({});
+  const { data } = await client.get(`/uploads/${id}`);
+
+  return data.audios ?? [];
+};
+
+export const useFetchPublicUploads = (id: string) => {
+  const dispatch = useDispatch();
+
+  const query = useQuery({
+    queryKey: ['uploads', id],
+    queryFn: () => fetchPublicUploads(id),
+    refetchOnWindowFocus: true,
+    refetchOnMount: 'always',
+    retry: 1,
+    enabled: !!id,
+  });
+
+  useEffect(() => {
+    if (query.error) {
+      const errorMessage = catchAsyncError(query.error);
+      dispatch(updateNotification({ message: errorMessage, type: 'error' }));
+    }
+  }, [query.error, dispatch]);
+
+  return query;
+};

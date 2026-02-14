@@ -35,7 +35,7 @@ const PublicProfile: FC<Props> = ({ route }) => {
             tabBarIndicatorStyle: { backgroundColor: colors.SECONDARY },
           }}
         >
-          <Tab.Screen name="Uploads">
+          <Tab.Screen name="Uploads" initialParams={{ profileId }}>
             {() => (
               <AnimatedTabScreenWrapper>
                 <PublicUploadsTab />
@@ -43,7 +43,7 @@ const PublicProfile: FC<Props> = ({ route }) => {
             )}
           </Tab.Screen>
 
-          <Tab.Screen name="Playlists">
+          <Tab.Screen name="Playlists" initialParams={{ profileId }}>
             {() => (
               <AnimatedTabScreenWrapper>
                 <PublicPlaylistsTab />
