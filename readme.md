@@ -11,6 +11,10 @@
 </h1>
 
 <p align="center">
+<b>Cross-Platform Architecture · Android Production Ready</b>
+</p>
+
+<p align="center">
   <b>A full-stack audio streaming platform built with modern backend & mobile technologies</b>
 </p>
 
@@ -70,15 +74,30 @@
 
 ---
 
+## 📱 Platform Compatibility
+
+> ⚠️ Development Environment Notice
+
+This project is developed on Windows.
+
+- ✅ Fully supported on Android
+- ✅ Core logic is cross-platform (React Native compatible)
+- ⚠️ iOS native build not configured (requires macOS + Xcode)
+- ⚠️ iOS native modules requiring macOS environment are not configured
+
+The architecture remains platform-ready and can be configured for iOS in a macOS environment.
+
+---
+
 ## 🛠 Tech Stack
 
 <div align="center">
 
-|  Layer  |                              Technologies                              |
-| :-----: | :--------------------------------------------------------------------: |
-| Backend |    Node.js · Express · MongoDB · Mongoose · JWT · Yup · Nodemailer     |
-| Mobile  | React Native · Redux Toolkit · React Query · Reanimated · Track Player |
-| Tooling |       TypeScript · Git · Postman · Env Variables · Path Aliases        |
+|  Layer  |                                           Technologies                                            |
+| :-----: | :-----------------------------------------------------------------------------------------------: |
+| Backend |                  Node.js · Express · MongoDB · Mongoose · JWT · Yup · Nodemailer                  |
+| Mobile  | React Native (Android Production Ready) · Redux Toolkit · React Query · Reanimated · Track Player |
+| Tooling |                     TypeScript · Git · Postman · Env Variables · Path Aliases                     |
 
 </div>
 
@@ -105,6 +124,14 @@
 <p align="center">
 More features, optimizations, and refinements are in progress.
 </p>
+
+---
+
+## 🏗 Development Note
+
+The mobile application follows a cross-platform React Native architecture.  
+Native iOS build configuration requires macOS (Xcode) and can be enabled in a macOS environment.
+Business logic, API integration, and state management remain fully platform-agnostic.
 
 ---
 
