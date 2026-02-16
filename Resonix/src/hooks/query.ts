@@ -296,7 +296,7 @@ export const useFetchPublicProfile = (id: string) => {
 
 const fetchPublicUploads = async (id: string): Promise<AudioData[]> => {
   const client = await getClient({});
-  const { data } = await client.get(`/uploads/${id}`);
+  const { data } = await client.get(`/profile/uploads/${id}`);
 
   return data.audios ?? [];
 };
@@ -304,7 +304,7 @@ const fetchPublicUploads = async (id: string): Promise<AudioData[]> => {
 export const useFetchPublicUploads = (id: string) => {
   const dispatch = useDispatch();
 
-  const query = useQuery({
+  const query = useQuery<AudioData[]>({
     queryKey: ['uploads', id],
     queryFn: () => fetchPublicUploads(id),
     refetchOnWindowFocus: true,

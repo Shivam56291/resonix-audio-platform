@@ -8,11 +8,15 @@ import { HomeNavigatorStackParamList } from 'src/@types/navigation';
 import PublicProfileContainer from 'components/profile/PublicProfileContainer';
 import colors from '@utils/colors';
 
-import AnimatedTabScreenWrapper from '@ui/AnimatedTabScreenWrapper';
 import PublicUploadsTab from '@components/profile/PublicUploadsTab';
 import PublicPlaylistsTab from '@components/profile/PublicPlaylistsTab';
 
-const Tab = createMaterialTopTabNavigator();
+export type PublicProfileTopTabParamList = {
+  Uploads: { profileId: string };
+  Playlists: { profileId: string };
+};
+
+const Tab = createMaterialTopTabNavigator<PublicProfileTopTabParamList>();
 
 type Props = NativeStackScreenProps<
   HomeNavigatorStackParamList,
@@ -35,21 +39,17 @@ const PublicProfile: FC<Props> = ({ route }) => {
             tabBarIndicatorStyle: { backgroundColor: colors.SECONDARY },
           }}
         >
-          <Tab.Screen name="Uploads" initialParams={{ profileId }}>
-            {() => (
-              <AnimatedTabScreenWrapper>
-                <PublicUploadsTab />
-              </AnimatedTabScreenWrapper>
-            )}
-          </Tab.Screen>
+          <Tab.Screen
+            name="Uploads"
+            component={PublicUploadsTab}
+            initialParams={{ profileId }}
+          />
 
-          <Tab.Screen name="Playlists" initialParams={{ profileId }}>
-            {() => (
-              <AnimatedTabScreenWrapper>
-                <PublicPlaylistsTab />
-              </AnimatedTabScreenWrapper>
-            )}
-          </Tab.Screen>
+          <Tab.Screen
+            name="Playlists"
+            component={PublicPlaylistsTab}
+            initialParams={{ profileId }}
+          />
         </Tab.Navigator>
       </View>
     </AppView>
