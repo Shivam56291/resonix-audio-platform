@@ -322,3 +322,34 @@ export const useFetchPublicUploads = (id: string) => {
 
   return query;
 };
+
+// ------------------------------------------------
+
+const fetchPublicPlaylists = async (id: string): Promise<Playlist[]> => {
+  const client = await getClient({});
+  const { data } = await client.get(`/profile/playlist/${id}`);
+
+  return data.playlists ?? [];
+};
+
+export const useFetchPublicPlaylists = (id: string) => {
+  const dispatch = useDispatch();
+
+  const query = useQuery<Playlist[]>({
+    queryKey: ['playlist', id],
+    queryFn: () => fetchPublicPlaylists(id),
+    refetchOnWindowFocus: true,
+    refetchOnMount: 'always',
+    retry: 1,
+    enabled: !!id,
+  });
+
+  useEffect(() => {
+    if (query.error) {
+      const errorMessage = catchAsyncError(query.error);
+      dispatch(updateNotification({ message: errorMessage, type: 'error' }));
+    }
+  }, [query.error, dispatch]);
+
+  return query;
+};

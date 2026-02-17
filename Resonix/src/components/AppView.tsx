@@ -1,8 +1,8 @@
 import { FC, ReactNode } from 'react';
-import { StyleSheet, View } from 'react-native';
-
+import { StyleSheet, View, Text } from 'react-native';
 import MiniAudiPlayer from './MiniAudioPlayer';
 import useAudioController from 'hooks/useAudioController';
+import PlaylistAudioModal from './PlaylistAudioModal';
 
 interface Props {
   children: ReactNode;
@@ -19,6 +19,11 @@ const AppView: FC<Props> = ({ children }) => {
           <MiniAudiPlayer />
         </View>
       )}
+      <PlaylistAudioModal>
+        <View>
+          <Text>Playlist Audio Modal</Text>
+        </View>
+      </PlaylistAudioModal>
     </View>
   );
 };

@@ -39,6 +39,10 @@ const RecentlyPlayed: FC<Props> = () => {
     );
   }
 
+  if (uniqueData.length === 0) {
+    return null;
+  }
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Recently Played</Text>

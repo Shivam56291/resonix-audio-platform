@@ -27,6 +27,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { getClient } from 'api/client';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { TabParamList } from 'src/@types/navigation';
+import { getAuthState } from 'store/auth';
 
 interface Props {}
 
@@ -36,6 +37,7 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 const MiniAudiPlayer: FC<Props> = () => {
   const { onGoingAudio } = useSelector(getPlayerState);
+  const { profile } = useSelector(getAuthState);
   const { isPlaying, togglePlayPause, isBusy } = useAudioController();
   const progress = useProgress();
   const [playerVisibility, setPlayerVisibility] = useState(false);
@@ -240,12 +242,18 @@ const MiniAudiPlayer: FC<Props> = () => {
 
   const handleOnProfileLinkPress = () => {
     closePlayerModal();
-    navigate('HomeNavigator', {
-      screen: 'PublicProfile',
-      params: {
-        profileId: onGoingAudio?.owner?.id ?? '',
-      },
-    });
+
+    if (profile?.id === onGoingAudio?.owner?.id) {
+      navigate('ProfileScreen');
+      return;
+    } else {
+      navigate('HomeNavigator', {
+        screen: 'PublicProfile',
+        params: {
+          profileId: onGoingAudio?.owner?.id ?? '',
+        },
+      });
+    }
   };
 
   return (
