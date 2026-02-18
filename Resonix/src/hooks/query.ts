@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import catchAsyncError from 'src/api/catchError';
 import { updateNotification } from 'src/store/notification';
-import { AudioData, History, Playlist } from 'src/@types/audio';
+import { AudioData, CompletePlaylist, History, Playlist } from 'src/@types/audio';
 import { getClient } from 'src/api/client';
 import { PublicProfile } from 'src/@types/user';
 
@@ -338,6 +338,39 @@ export const useFetchPublicPlaylists = (id: string) => {
   const query = useQuery<Playlist[]>({
     queryKey: ['playlist', id],
     queryFn: () => fetchPublicPlaylists(id),
+    refetchOnWindowFocus: true,
+    refetchOnMount: 'always',
+    retry: 1,
+    enabled: !!id,
+  });
+
+  useEffect(() => {
+    if (query.error) {
+      const errorMessage = catchAsyncError(query.error);
+      dispatch(updateNotification({ message: errorMessage, type: 'error' }));
+    }
+  }, [query.error, dispatch]);
+
+  return query;
+};
+
+// ------------------------------------------------
+
+const fetchPlaylistAudios = async (id: string): Promise<CompletePlaylist> => {
+  const client = await getClient({});
+  const { data } = await client.get(`/profile/playlist-audios/${id}`);
+
+  console.log("id", id)
+
+  return data.list ?? {};
+};
+
+export const useFetchPlaylistAudios = (id: string) => {
+  const dispatch = useDispatch();
+
+  const query = useQuery<CompletePlaylist>({
+    queryKey: ['playlist-audios', id],
+    queryFn: () => fetchPlaylistAudios(id),
     refetchOnWindowFocus: true,
     refetchOnMount: 'always',
     retry: 1,

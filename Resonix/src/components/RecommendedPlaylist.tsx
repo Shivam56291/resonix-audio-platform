@@ -10,10 +10,13 @@ import {
 
 import { useFetchRecommendedPlaylist } from '../hooks/query';
 import colors from '../utils/colors';
+import { Playlist } from 'src/@types/audio';
 
-interface Props {}
+interface Props {
+  onListPress: (playlist: Playlist) => void;
+}
 
-const RecommendedPlaylist: FC<Props> = () => {
+const RecommendedPlaylist: FC<Props> = ({ onListPress }) => {
   const { data } = useFetchRecommendedPlaylist();
   return (
     <>
@@ -25,7 +28,10 @@ const RecommendedPlaylist: FC<Props> = () => {
           data={data}
           keyExtractor={item => item.id}
           renderItem={({ item }) => (
-            <Pressable style={styles.container}>
+            <Pressable
+              onPress={() => onListPress(item)}
+              style={styles.container}
+            >
               <Image
                 source={require('../../assets/music.png')}
                 style={styles.poster}

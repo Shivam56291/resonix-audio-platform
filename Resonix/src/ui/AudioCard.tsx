@@ -40,7 +40,7 @@ const AudioCard: FC<Props> = ({
         pressed && { transform: [{ scale: 0.96 }], opacity: 0.9 },
       ]}
     >
-      <View>
+      <View style={styles.imageContainer}>
         <Image source={source} style={styles.image} />
 
         {playing && (
@@ -65,9 +65,14 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   image: {
+    height: '100%',
+    width: '100%',
+  },
+  imageContainer: {
     aspectRatio: 1,
     width: '100%',
     borderRadius: 7,
+    overflow: 'hidden',
   },
   audioContainer: {
     width: 100,

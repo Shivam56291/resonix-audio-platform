@@ -20,6 +20,12 @@ export interface Playlist {
   visibility: 'public' | 'private';
 }
 
+export interface CompletePlaylist extends Playlist {
+  id: string;
+  title: string;
+  audios: AudioData[];
+}
+
 export interface HistoryAudio {
   audioId: string;
   date: string;
