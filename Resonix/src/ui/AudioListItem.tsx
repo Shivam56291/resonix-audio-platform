@@ -36,7 +36,7 @@ const AudioListItem: FC<Props> = ({ audio, onPress, isPlaying = false }) => {
           {audio.title}
         </Text>
         <Text style={styles.owner} numberOfLines={1} ellipsizeMode="tail">
-          {audio.owner.name}
+          {audio.owner?.name ?? 'Unknown'}
         </Text>
       </View>
     </Pressable>

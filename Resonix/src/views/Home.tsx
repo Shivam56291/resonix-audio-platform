@@ -130,7 +130,6 @@ const Home: FC<Props> = () => {
 
   const handleOnListPress = (playlist: Playlist) => {
     dispatch(updateSelectedList(playlist.id));
-    console.log("Playlist : ", playlist)
     dispatch(updatePlaylistVisibility(true));
   };
 
