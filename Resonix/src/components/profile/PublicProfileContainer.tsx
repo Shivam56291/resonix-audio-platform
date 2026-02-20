@@ -1,15 +1,43 @@
 import { FC } from 'react';
-import { Text, View, StyleSheet } from 'react-native';
+import { Text, View, StyleSheet, Pressable } from 'react-native';
 
 import AvatarField from '@ui/AvatarField';
 import colors from '@utils/colors';
 import { PublicProfile } from 'src/@types/user';
+import { useFetchIsFollowing } from 'hooks/query';
+import { getClient } from 'api/client';
+import catchAsyncError from 'api/catchError';
+import { useDispatch } from 'react-redux';
+import { updateNotification } from 'store/notification';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface Props {
   profile?: PublicProfile;
 }
 
 const PublicProfileContainer: FC<Props> = ({ profile }) => {
+  const { data: isFollowing } = useFetchIsFollowing(profile?.id || '');
+  const dispatch = useDispatch();
+  const queryclient = useQueryClient();
+
+  const followingMutation = useMutation({
+    mutationFn: async id => toggleFollowing(id),
+    onMutate: (id: string) => {
+      queryclient.setQueryData<boolean>(['is-following', id], prev => !prev);
+    },
+  });
+
+  const toggleFollowing = async (id: string) => {
+    try {
+      if (!id) return;
+      const client = await getClient();
+      await client.post('/profile/update-follower' + id);
+      queryclient.invalidateQueries({ queryKey: ['profile', id] });
+    } catch (error) {
+      const errorMessage = catchAsyncError(error);
+      dispatch(updateNotification({ message: errorMessage, type: 'error' }));
+    }
+  };
 
   if (!profile) {
     return null;
@@ -20,14 +48,20 @@ const PublicProfileContainer: FC<Props> = ({ profile }) => {
 
       <View>
         <Text style={styles.profileName}>{profile.name}</Text>
+        <Text style={styles.followerText}>{profile.followers} Followers</Text>
 
-        <View style={styles.profileActionContainer}>
+        <Pressable
+          onPress={() => followingMutation.mutate(profile.id)}
+          style={({ pressed }) => [
+            styles.profileActionContainer,
+            pressed && styles.pressed,
+          ]}
+        >
           <Text style={styles.profileActionLink}>
-            {profile.followers} Followers
+            {isFollowing ? 'Unfollow' : 'Follow'}
           </Text>
-        </View>
+        </Pressable>
       </View>
-
     </View>
   );
 };
@@ -64,6 +98,11 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     marginTop: 5,
   },
+  followerText: {
+    color: colors.CONTRAST,
+    paddingVertical: 2,
+    marginTop: 5,
+  },
   profileActionContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -77,7 +116,7 @@ const styles = StyleSheet.create({
     paddingLeft: 17,
   },
   pressed: {
-    opacity: 0.5,
+    opacity: 0.6,
     transform: [{ scale: 0.95 }],
   },
 });

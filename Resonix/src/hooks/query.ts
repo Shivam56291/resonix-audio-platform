@@ -386,3 +386,37 @@ export const useFetchPlaylistAudios = (id: string) => {
 
   return query;
 };
+
+// ------------------------------------------------
+
+const fetchIsFollowing = async (id: string): Promise<boolean> => {
+  const client = await getClient({});
+  const { data } = await client.get(`/profile/is-following/${id}`);
+
+  console.log("id", id)
+
+  return data.status;
+};
+
+export const useFetchIsFollowing = (id: string) => {
+  const dispatch = useDispatch();
+
+  const query = useQuery<boolean>({
+    queryKey: ['is-following', id],
+    queryFn: () => fetchIsFollowing(id),
+    refetchOnWindowFocus: true,
+    refetchOnMount: 'always',
+    retry: 1,
+    enabled: !!id,
+  });
+
+  useEffect(() => {
+    if (query.error) {
+      const errorMessage = catchAsyncError(query.error);
+      dispatch(updateNotification({ message: errorMessage, type: 'error' }));
+    }
+  }, [query.error, dispatch]);
+
+  return query;
+};
+
