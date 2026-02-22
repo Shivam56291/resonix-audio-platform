@@ -9,10 +9,11 @@ import PlayAnimation from './PlayAnimation';
 interface Props {
   audio: AudioData;
   onPress?: () => void;
+  onLongPress?: () => void;
   isPlaying?: boolean;
 }
 
-const AudioListItem: FC<Props> = ({ audio, onPress, isPlaying = false }) => {
+const AudioListItem: FC<Props> = ({ audio, onPress, onLongPress, isPlaying = false }) => {
   const getSource = (poster?: string) => {
     return poster ? { uri: poster } : require('src/../assets/music_small.png');
   };
@@ -22,8 +23,14 @@ const AudioListItem: FC<Props> = ({ audio, onPress, isPlaying = false }) => {
     onPress?.();
   };
 
+  const handleLongPress = () => {
+    hapticLight();
+    onLongPress?.();
+  };
+
   return (
     <Pressable
+      onLongPress={handleLongPress}
       onPress={handlePress}
       style={({ pressed }) => [styles.listItem, pressed && styles.pressed]}
     >
