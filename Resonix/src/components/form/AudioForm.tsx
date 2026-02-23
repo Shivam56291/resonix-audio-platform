@@ -137,8 +137,10 @@ const AudioForm: FC<Props> = ({
   useEffect(() => {
     if (initialValues) {
       setAudioInfo({ ...initialValues });
+      setIsForUpdate(true);
+    } else {
+      setIsForUpdate(false);
     }
-    setIsForUpdate(true);
   }, [initialValues]);
 
   return (
@@ -167,7 +169,7 @@ const AudioForm: FC<Props> = ({
               }}
               file={audioInfo.poster}
             />
-            {isForUpdate && (
+            {!isForUpdate && (
               <FileSelector
                 icon={
                   <MaterialCommunityIcons

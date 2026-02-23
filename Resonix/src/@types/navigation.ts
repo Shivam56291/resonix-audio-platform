@@ -1,4 +1,5 @@
 import { NavigatorScreenParams } from '@react-navigation/native';
+import { AudioData } from './audio';
 
 export type TabParamList = {
   HomeNavigator: NavigatorScreenParams<HomeNavigatorStackParamList>;
@@ -24,6 +25,7 @@ export type ProfileNavigatorStackParamList = {
   Profile: undefined;
   ProfileSettings: undefined;
   Verification: { userInfo: NewUserResponse; redirectTo: 'ProfileSettings' };
+  UpdateAudio: {audio: AudioData};
 };
 
 export type HomeNavigatorStackParamList = {

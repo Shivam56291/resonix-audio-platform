@@ -13,6 +13,8 @@ import { AudioData } from 'src/@types/audio';
 import colors from '@utils/colors';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import OptionsModal from 'components/OptionsModal';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { ProfileNavigatorStackParamList } from 'src/@types/navigation';
 
 interface Props {}
 
@@ -21,9 +23,19 @@ const UploadTab: FC<Props> = () => {
   const { data = [], isLoading } = useFetchUploadsByProfile();
   const { onAudioPress } = useAudioController();
   const [showOptions, setShowOptions] = useState(false);
+  const [selectedAudio, setSelectedAudio] = useState<AudioData>();
+  const { navigate } =
+    useNavigation<NavigationProp<ProfileNavigatorStackParamList>>();
 
   const handleOnLongPress = (audio: AudioData) => {
+    setSelectedAudio(audio);
     setShowOptions(true);
+  };
+
+  const handleOnEditPress = () => {
+    setShowOptions(false);
+    if (!selectedAudio) return;
+    navigate('UpdateAudio', { audio: selectedAudio });
   };
 
   if (isLoading) {
@@ -54,11 +66,11 @@ const UploadTab: FC<Props> = () => {
           {
             title: 'Edit',
             icon: 'edit', // 'playlist-plus
-            // onPress: handleAddToPlaylist,
+            onPress: handleOnEditPress,
           },
         ]}
         renderItem={item => (
-          <Pressable style={styles.optionContainer} onPress={() => {}}>
+          <Pressable style={styles.optionContainer} onPress={item.onPress}>
             <AntDesign name={item.icon} size={24} color={colors.PRIMARY} />
             <Text style={styles.optionLabel}>{item.title}</Text>
           </Pressable>
