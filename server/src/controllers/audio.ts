@@ -17,7 +17,7 @@ interface CreateAudioRequest extends RequestWithFiles {
 
 export const createAudio: RequestHandler = async (
   req: CreateAudioRequest,
-  res
+  res,
 ) => {
   const { title, about, category } = req.body;
   console.log("REQ BODY:", req.body);
@@ -83,17 +83,17 @@ export const createAudio: RequestHandler = async (
 
 export const updateAudio: RequestHandler = async (
   req: CreateAudioRequest,
-  res
+  res,
 ) => {
   const { title, about, category } = req.body;
   const poster = req.files?.poster as formidable.File;
   const ownerId = req.user.id;
-  const audioId = req.params.id;
+  const audioId = req.params.audioId;
 
   const audio = await Audio.findOneAndUpdate(
     { _id: audioId, owner: ownerId },
     { title, about, category },
-    { new: true }
+    { new: true },
   );
   if (!audio) {
     return res.status(404).json({ error: "Record not found!" });

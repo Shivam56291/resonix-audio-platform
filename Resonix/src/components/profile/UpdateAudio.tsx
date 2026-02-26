@@ -35,7 +35,7 @@ const UpdateAudio: FC<Props> = ({ route }) => {
         'Content-Type': 'multipart/form-data',
       });
 
-      await client.put(`/audio/${audio.id}`, formData, {
+      await client.patch(`/audio/${audio.id}`, formData, {
         onUploadProgress: progressEvent => {
           const progress = mapRange({
             inputValue: progressEvent.loaded,
