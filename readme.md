@@ -18,6 +18,24 @@
   <b>A full-stack audio streaming platform built with modern backend & mobile technologies</b>
 </p>
 
+---
+
+## 🎬 App Preview
+
+<p align="center">
+  <img 
+    src="./assets/showcase.gif" 
+    alt="Resonix App Demo" 
+    width="100%" 
+  />
+</p>
+
+<p align="center">
+  <sub>Android Production Build · Real Device Recording</sub>
+</p>
+
+---
+
 <p align="center">
   <img src="https://img.shields.io/badge/Node.js-18.x-green?style=for-the-badge&logo=node.js"/>
   <img src="https://img.shields.io/badge/Express.js-Backend-black?style=for-the-badge&logo=express"/>
